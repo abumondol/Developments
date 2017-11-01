@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="edu.virginia.cs.mooncake.wada.SensorSelectActivity"
+    tools:deviceIds="wear_square">
+
+    <TextView
+        android:id="@+id/tvTimeType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Sensors:" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="acl"
+            android:id="@+id/checkBoxAcl"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:checked="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gyro"
+            android:id="@+id/checkBoxGyro"
+            android:layout_row="0"
+            android:layout_column="1"
+            android:checked="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="grav"
+            android:id="@+id/checkBoxGrav"
+            android:layout_row="0"
+            android:layout_column="2"
+            android:checked="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="quat"
+            android:id="@+id/checkBoxQuat"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:checked="true" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="lacc"
+            android:id="@+id/checkBoxLacc"
+            android:layout_row="1"
+            android:layout_column="1"
+            android:checked="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="step"
+            android:id="@+id/checkBoxStepDetect"
+            android:layout_row="1"
+            android:layout_column="2"
+            android:checked="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="step count"
+            android:id="@+id/checkBoxStepCount"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:checked="false"
+            android:layout_columnSpan="2" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ble"
+            android:id="@+id/checkBoxBLE"
+            android:layout_row="2"
+            android:layout_column="2"
+            android:checked="false"
+            android:enabled="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WiFi"
+            android:id="@+id/checkBoxWiFi"
+            android:layout_row="3"
+            android:layout_column="0"
+            android:checked="false"
+            android:enabled="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gps"
+            android:id="@+id/checkBoxGPS"
+            android:layout_row="3"
+            android:layout_column="1"
+            android:checked="false"
+            android:enabled="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HR"
+            android:id="@+id/checkBoxHR"
+            android:layout_row="3"
+            android:layout_column="2"
+            android:checked="false"
+            android:enabled="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="light"
+            android:id="@+id/checkBoxLight"
+            android:layout_row="4"
+            android:layout_column="0"
+            android:checked="false"
+            android:enabled="false" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aud"
+            android:id="@+id/checkBoxAudio"
+            android:layout_row="4"
+            android:layout_column="1"
+            android:checked="false"
+            android:enabled="false" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ok"
+            android:id="@+id/btnSensorSelectOK"
+            android:layout_row="4"
+            android:layout_column="2"
+            android:onClick="btnClick" />
+
+    </GridLayout>
+
+
+</LinearLayout>

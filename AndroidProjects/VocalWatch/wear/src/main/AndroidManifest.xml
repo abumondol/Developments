@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.virginia.cs.mooncake.vocalwatch">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault">
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="false" />
+
+        <activity
+            android:name=".WatchMainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.DeviceDefault.Light">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".MyReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".MyListActivity"
+            android:label="@string/title_activity_my_list"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".MyTTSActivity"
+            android:label="@string/title_activity_my_tts"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".NetActivity"
+            android:label="@string/title_activity_net"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".ReminderActivity"
+            android:label="@string/title_activity_reminder"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".ControlledActivity"
+            android:label="@string/title_activity_controlled"
+            android:launchMode="singleTask" />
+
+        <service
+            android:name=".WearDataLayerListenerService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".WearIntentService"
+            android:exported="false" />
+        <service
+            android:name=".DataTransferService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".ControlledActivity2"
+            android:label="@string/title_activity_controlled2"></activity>
+    </application>
+
+</manifest>

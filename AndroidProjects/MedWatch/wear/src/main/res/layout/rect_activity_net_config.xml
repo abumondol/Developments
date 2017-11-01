@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="edu.virginia.cs.mondol.medwatch.NetConfigActivity"
+    tools:deviceIds="wear_square">
+
+    <Button
+        android:id="@+id/btnLoadNetConfig"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="btnClick"
+        android:text="Load Config" />
+
+    <Button
+        android:id="@+id/btnBeaconTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="btnClick"
+        android:text="Scan Beacon" />
+
+
+    <TextView
+        android:id="@+id/tvNetConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Config not loaded." />
+
+
+</LinearLayout>

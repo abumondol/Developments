@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.virginia.cs.mondol.fed">
+
+    <uses-feature android:name="android.hardware.type.watch" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault">
+        <activity
+            android:name=".WatchMainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".TestActivity"
+            android:label="@string/title_activity_test"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".MonitorActivity"
+            android:label="@string/title_activity_monitor"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".NetTestActivity"
+            android:label="@string/title_activity_net_test"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".BLETestActivity"
+            android:label="@string/title_activity_bletest"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".MonitorOutputActivity"
+            android:label="@string/title_activity_monitor_output"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".DataActivity"
+            android:label="@string/title_activity_data"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".SensorMonitorActivity"
+            android:label="@string/title_activity_sensor_monitor"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".NetConfigActivity"
+            android:label="@string/title_activity_net_config"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".ConfigActivity"
+            android:label="@string/title_activity_config"
+            android:launchMode="singleTask" />
+
+        <service
+            android:name=".SensorService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".BLEService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".NetService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".FEDReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

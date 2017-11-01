@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="edu.virginia.cs.mooncake.vocalwatch.WatchMainActivity"
+    tools:deviceIds="wear">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Vocal Watch"
+        android:textColor="@android:color/black"
+        android:textSize="15dp"
+        app:layout_box="all" />
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/tvTitle"
+        android:paddingLeft="6dp"
+        android:paddingTop="0dp"
+        android:text="Not Running"
+        android:paddingBottom="2dp" />
+
+    <Button
+        android:id="@+id/btnSubject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/tvStatus"
+        android:onClick="btnClick"
+        android:text="Subject" />
+
+    <TextView
+        android:id="@+id/tvSubject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/btnSubject"
+        android:layout_below="@+id/tvStatus"
+        android:paddingLeft="6dp"
+        android:paddingTop="5dp"
+        android:text="N/A" />
+
+
+    <Button
+        android:id="@+id/btnStartStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/btnSubject"
+        android:onClick="btnClick"
+        android:text="Start" />
+
+    <Button
+        android:id="@+id/btnRefresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnSubject"
+        android:layout_toEndOf="@+id/btnStartStop"
+        android:onClick="btnClick"
+        android:text="Refresh" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rem List"
+        android:id="@+id/btnReminderList"
+        android:layout_below="@+id/btnStartStop"
+        android:layout_alignParentStart="true"
+        android:onClick="btnClick" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Net"
+        android:id="@+id/btnNet"
+        android:layout_below="@+id/btnRefresh"
+        android:layout_toEndOf="@+id/btnStartStop"
+        android:onClick="btnClick" />
+
+
+</RelativeLayout>

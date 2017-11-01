@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">VocalWatch</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="title_activity_event_list">Event List</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_tts">TTSActivity</string>
+    <string name="title_activity_auto_main">AutoMainActivity</string>
+    <string name="title_activity_my_list">List Activity</string>
+    <string name="title_activity_my_tts">MyTTSActivity</string>
+    <string name="title_activity_net">NetActivity</string>
+    <string name="title_activity_reminder">Reminder Activity</string>
+    <string name="title_activity_controlled">ControlledActivity</string>
+    <string name="title_activity_controlled2">ControlledActivity2</string>
+</resources>
