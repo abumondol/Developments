@@ -1,5 +1,6 @@
 package data_processing;
 
+import constants_config.MyConstants;
 import constants_config.MyParameters;
 import static data_processing.DataManagerUVA.getLabData;
 import entities.Pattern;
@@ -54,6 +55,9 @@ public class DataManagerSteven {
                 }
 
                 sds[i][j] = new SessionData();
+                sds[i][j].datasetId = MyConstants.DATAET_ID_STEVEN_LAB;
+                sds[i][j].subjectId = i;
+                sds[i][j].sessionId = j;
 
                 accelData = processAccelData(MyFileUtils.readCSV(filePathAccel, true));
                 accelData = DataManager.adjustSamplingRate(accelData);
@@ -120,6 +124,9 @@ public class DataManagerSteven {
                 }
 
                 sds[i][j] = new SessionData();
+                sds[i][j].datasetId = MyConstants.DATAET_ID_STEVEN_FREE;
+                sds[i][j].subjectId = i;
+                sds[i][j].sessionId = j;
 
                 if (left) {
                     filePathAccel = filePathAccel.replace("right", "left");
@@ -313,11 +320,11 @@ public class DataManagerSteven {
 
                 biteTotal += bite;
                 sipTotal += sip;
-                System.out.println("Ground Truth annot count UVA Lab Subject " + subject + ", Session " + sess + " >> bite: " + bite + ", sip: " + sip);
+                System.out.println("Ground Truth annot count Steven Lab Subject " + subject + ", Session " + sess + " >> bite: " + bite + ", sip: " + sip);
             }
         }
 
-        System.out.println("Ground Truth annot count UVA Lab Session All >> bite: " + biteTotal + ", sip: " + sipTotal);
+        System.out.println("Ground Truth annot count Steven Lab Session All >> bite: " + biteTotal + ", sip: " + sipTotal);
     }
 
     //////////////////////////////// Writing data to File////////////////////////////////////

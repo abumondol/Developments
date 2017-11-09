@@ -2,7 +2,6 @@ package pattern;
 
 import constants_config.MyParameters;
 import entities.Pattern;
-import java.util.ArrayList;
 import myutils.MyArrayUtils;
 import myutils.MyMathUtils;
 
@@ -31,7 +30,7 @@ public class PatternManager {
             p.data[2][n] = accelData[2][k];
         }
 
-        p.dataNormalized = MyArrayUtils.z_normalize_horizontal(p.data);//MyArrayUtils.normalize_horizontal_data(p.data);
+        p.dataNormalized = MyArrayUtils.normalize_horizontal_data(p.data);        
         p.minPointIndex = index;
         p.minPointXVal = accelData[0][index];
         p.stdev = MyMathUtils.totalStdev(p.data, 0, p.data[0].length - 1);

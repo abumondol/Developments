@@ -37,10 +37,10 @@ public class DTW {
             }
 
             a[0][0] = 0;
-            for (i = 1; i <= invariance_length; i++) {
+            /*for (i = 1; i <= invariance_length; i++) {
                 a[i][0] = 0;
                 a[0][i] = 0;
-            }
+            }*/
 
             infinityCostArray2D = a;
             //System.out.println("Created infinityCostArray.");
@@ -57,11 +57,55 @@ public class DTW {
         }
 
         return c;
-        
-        
 
     }
+  
 
+    public static float distance(float[][] A, float[][] B, float maxDistance) {
+        if (infinityCostArray2D == null) {
+            setInfinityCostArray2D();
+        }
+
+        float[][] cost = infinityCostArray2D;
+        int i = 0, j = 0, start, end;
+        float d, min_cost;
+
+        for (i = 1; i <= length; i++) {
+            
+            if (i <= r) {
+                start = 1;
+            } else {
+                start = i - r + 1;
+            }
+
+            if (i >= length - r + 1) {
+                end = length;
+            } else {
+                end = i + r - 1;
+            }
+
+            //start = (1 >= i - r + 1 ? 1 : i - r + 1); //max(0, i - r)
+            //end = (length <= i + r - 1 ? length : i + r - 1); //min(m - 1, i + r)
+            
+            min_cost = Float.MAX_VALUE;
+            for (j = start; j <= end; j++) {
+                d = 1 - (A[0][i - 1] * B[0][j - 1] + A[1][i - 1] * B[1][j - 1] + A[2][i - 1] * B[2][j - 1]);
+                cost[i][j] = d + min(cost[i - 1][j], cost[i][j - 1], cost[i - 1][j - 1]);
+                if (cost[i][j] < min_cost) {
+                    min_cost = cost[i][j];
+                }
+            }
+
+            //if (i <= length - invariance_length && j <= length - invariance_length && min_cost > maxDistance) {
+            if (min_cost > maxDistance) {
+                return min_cost;
+            }
+        }
+
+        min_cost = cost[length][length]; 
+        return min_cost;
+    }
+    
     public static float distanceInvariance(float[][] A, float[][] B, float maxDistance) {
         if (infinityCostArray2D == null) {
             setInfinityCostArray2D();

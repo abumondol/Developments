@@ -3,13 +3,14 @@ package entities;
 import constants_config.MyParameters;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import pattern.PatternUtils;
 
 public class Pattern implements Serializable {
 
     public static int PATTERN_TYPE_NEG = 0;
-    public static int PATTERN_TYPE_X = 1;
-    public static int PATTERN_TYPE_POS = 2;
+    public static int PATTERN_TYPE_POS = 1;
+    public static int PATTERN_TYPE_X = 2;
 
     public float[][] data;
     public float[][] dataNormalized;
@@ -24,13 +25,9 @@ public class Pattern implements Serializable {
     public float minPointXVal;
     public float stdev;
 
-    //coverage for training    
-    public boolean isCovered = false;
-    public boolean isSelected = false;
-    public ArrayList<Pattern> coveredList = new ArrayList<>();
-
     //features pattern testing    
-    public int[] coverageCounts = {0, 0, 0};    
+    public int[][] coverageCountBins;
+    public float[] binXDiffMax;
     
     //processing 
     public int listIndex;
@@ -40,14 +37,10 @@ public class Pattern implements Serializable {
     public int nearestPatternIndex;
     public Pattern nearestPattern;
     public float biteScore;
-    
 
-    public void increaseCoverageCount(int patternType) {
-        coverageCounts[patternType]++;        
-    }
-
-    public int totalCoverageCount() {
-        return coverageCounts[0] + coverageCounts[1] + coverageCounts[2];
+    public Pattern() {
+        coverageCountBins = new int[3][MyParameters.BIN_COUNT];
+        binXDiffMax = new float[MyParameters.BIN_COUNT];
     }
 
 }
