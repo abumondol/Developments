@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import edu.virginia.cs.mondol.fed.utils.DateTimeUtils;
 import edu.virginia.cs.mondol.fed.utils.FedConstants;
-import edu.virginia.cs.mondol.fed.utils.FileUtils;
 import edu.virginia.cs.mondol.fed.utils.MathUtils;
 import edu.virginia.cs.mondol.fed.utils.SharedPrefUtil;
 
@@ -34,12 +33,8 @@ public class BiteDetector {
     int episodeCount = 0, totalDiscardEpisodeCount = 12;
     boolean discardData = true;
     int i, j, k, ix, axis;
-    boolean testMeal = false;
     long initDiscardDuration = 4 * 1000, initTime, episode_duration, lastBiteDetectionTime;
 
-
-    PatternChecker pc;
-    BiteClassifier bc;
     StringBuilder sb;
 
     long lastSentTime = 0, minSendInterval = 60 * 1000, lastDecisionTime = 0, minDecisionIntevalTime = 30 * 1000, mealWindowLength = 120 * 1000;
@@ -48,7 +43,6 @@ public class BiteDetector {
     public BiteDetector(int arrLen, Context ctx) {
         context = ctx;
         arrayLen = arrLen;
-        bc = new BiteClassifier();
         initTime = System.currentTimeMillis();
 
         minWindowCount = 3 * arrayLen / window_size_for_minx;
@@ -62,21 +56,6 @@ public class BiteDetector {
         time = new long[3 * arrayLen];
         biteList = new ArrayList<>();
         sb = new StringBuilder();
-
-        if (SharedPrefUtil.getSharedPrefInt(FedConstants.TEST_MEALS, context) > 0) {
-            minSendInterval = 30 * 1000;
-            minBiteCount = 4;
-            testMeal = true;
-            discardData = false;
-        }
-
-        pc = null;
-        if (SharedPrefUtil.getSharedPrefInt(FedConstants.PATTERN_USE, ctx) > 0) {
-            float[][][][] patterns = FileUtils.getPatterns();
-            if (patterns != null) {
-                pc = new PatternChecker(patterns);
-            }
-        }
 
     }
 
@@ -167,13 +146,8 @@ public class BiteDetector {
                 sb.append(minPointBiteList[i].minXVal);
 
                 if (checkClassifier(b)) {
-
-                    if (pc == null || !testMeal || pc.checkPattern(b, data)) {
-                        biteList.add(b.getClone());
-                        Log.i(FedConstants.MYTAG, String.format("Bite detected by Pattern:: Index: %d, Pattern Index: %d", i, b.patternIndex));
-                    } else {
-                        Log.i(FedConstants.MYTAG, String.format("Bite detected by Threshold:: Index: %d", i));
-                    }
+                    biteList.add(b.getClone());
+                    Log.i(FedConstants.MYTAG, "Bite Detected, Index:"+i);
                 }
 
                 sb.append("), ");
@@ -226,7 +200,7 @@ public class BiteDetector {
         Log.i(FedConstants.MYTAG, s);
         SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_BITE_TIME, lastBiteDetectionTime, context);
 
-        if (testMeal && count >= minBiteCount) {
+        if (count >= minBiteCount) {
             biteList.clear();
             return true;
         }

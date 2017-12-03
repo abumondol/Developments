@@ -36,10 +36,11 @@ public class FedConstants {
     public static final int WATCH_INFO_CODE_PCON = 201;
     public static final int WATCH_INFO_CODE_DCON = 202;
     public static final int WATCH_INFO_CODE_BOOT = 300;
-    public static final int WATCH_INFO_CODE_BATTERY = 401;
+    public static final int WATCH_INFO_CODE_BATTERY_PCT_REGULAR = 401;
     public static final int WATCH_INFO_CODE_BATTERY_ALARM = 402;
-    public static final int WATCH_INFO_CODE_PLUGGED = 501;
+    public static final int WATCH_INFO_CODE_IS_PLUGGED = 501;
     public static final int WATCH_INFO_CODE_NOT_PLUGGED = 502;
+    public static final int WATCH_INFO_CODE_LOCATION = 1000;
     public static final int WATCH_INFO_CODE_BEACON = 1;
 
 
@@ -105,10 +106,11 @@ public class FedConstants {
 
     public static String BLE_MAC_INDICES_STRING = "ble_mac_indices_string";
     public static String[] BLE_MAC_LIST_ALL = {
-            "d4c416bf5385", "c196b85904c4", "fd7676b335a3", "f70b5243e7b3", "fc4a94985124", "e5830df962f0",
-            "f563f3c569d7", "d0d70c19c171", "cf247561d166", "c83bf6930eba", "f6881c4e7ae4", "d61831d4cc96",
-            "984fee0f8605","f5d5fa52b881",
-            "f9123090c43f", "c8d3064862bc", "fbd8d4d9b31a"
+            "d4:c4:16:bf:53:85", "c1:96:b8:59:04:c4", "fd:76:76:b3:35:a3", "f7:0b:52:43:e7:b3", "fc:4a:94:98:51:24", "e5:83:0d:f9:62:f0",
+            "f5:63:f3:c5:69:d7", "d0:d7:0c:19:c1:71", "cf:24:75:61:d1:66", "c8:3b:f6:93:0e:ba", "f6:88:1c:4e:7a:e4", "d6:18:31:d4:cc:96",
+            "db:47:74:f5:79:d4", "e8:fa:a7:1b:16:dd", "f5:d5:fa:52:b8:81"
+            //"98:4f:ee:0f:86:05","f5:d5:fa:52:b8:81",
+            //"f9:12:30:90:c4:3f", "c8:d3:06:48:62:bc", "fb:d8:d4:d9:b3:1a"
     };
 
     public static String PATTERN_VERSION = "pattern_version";
@@ -118,9 +120,7 @@ public class FedConstants {
     public static int MONITOR_TYPE_NET_CONFIG = 1;
     public static int MONITOR_TYPE_SERVER_SYNC = 2;
 
-    public static String PATTERN_USE = "pattern_use";
-    public static String AT_HOME_ONLY = "at_home_only";
-    public static String TEST_MEALS = "test_meals";
+    public static String NO_BEACON = "no_beacon";
 
     public static String RUNNING_BLE_FILENAME = "running_ble_filename";
     public static String RUNNING_SENSOR_FILENAME = "running_sensor_filename";

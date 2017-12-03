@@ -7,12 +7,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,6 +23,7 @@ import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -36,21 +40,23 @@ import edu.virginia.cs.mondol.fed.utils.SharedPrefUtil;
 public class BLEService extends Service {
     private PowerManager powerManager;
     private PowerManager.WakeLock wakeLock;
+    private WifiManager wifiManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner bleScanner;
+    private ScanSettings scanSettings;
+    private ArrayList<ScanFilter> scanFilters;
     Context context;
     FEDConfig fc;
 
-    boolean bleStatus = false;
     StringBuilder sbBle;
     long fileStartTime, currentTime, serviceStartTime, lastDataSentTime = 0, lastTimeBleFound = 0; // dataSaveInterval = 10 * 60 * 1000, scanInterval = 30, scanDuration = 10;
     String fileName, mac;
     Handler handler;
-    boolean bleFound = false, timeSyncRequire = false, writtenToFile = false;
-
+    boolean bleStatus = false, bleFound = false, timeSyncRequire = false, writtenToFile = false;
+    int atHomeStatus = 0;
 
     String[] ble_mac_list;
-    int ble_mac_count = 0, fileIndex = 1;
+    int ble_mac_count = 0, fileIndex = 1, noBleFoundCount = 0;
 
     private AlarmManager alarmMgr;
     private PendingIntent alarmIntent;
@@ -65,10 +71,14 @@ public class BLEService extends Service {
                 "MyWakeLockTag");
         wakeLock.acquire();
 
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(this.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         bleScanner = mBluetoothAdapter.getBluetoothLeScanner();
+        scanSettings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
 
         context = this.getApplicationContext();
         currentTime = System.currentTimeMillis();
@@ -77,39 +87,50 @@ public class BLEService extends Service {
             SharedPrefUtil.putSharedPrefLong(FedConstants.TIME_SYNC_WATCH, 0, context);
         }
 
+        serviceStartTime = currentTime;
         if (SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_WATCH, context) == 0) {
             timeSyncRequire = true;
         } else {
             startSensorService(true);
+            fileStartTime = currentTime;
+            fileName = FEDUtils.getFileName(context, fileStartTime, "ble", serviceStartTime, fileIndex);
+            SharedPrefUtil.putSharedPref(FedConstants.RUNNING_BLE_FILENAME, fileName, context);
         }
-
-        serviceStartTime = fileStartTime = currentTime;
-        fileName = FEDUtils.getFileName(context, fileStartTime, "ble", serviceStartTime, fileIndex);
-        SharedPrefUtil.putSharedPref(FedConstants.RUNNING_BLE_FILENAME, fileName, context);
 
         MyNetConfig nc = FEDConfigWrapper.getNetConfig(context);
         if (nc.beacon_indices != null) {
+
             ble_mac_count = nc.beacon_indices.length;
             ble_mac_list = new String[ble_mac_count];
             for (int i = 0; i < ble_mac_count; i++) {
                 int ix = nc.beacon_indices[i];
-                if (ix > 0 && ix <= FedConstants.BLE_MAC_LIST_ALL.length)
-                    ble_mac_list[i] = FedConstants.BLE_MAC_LIST_ALL[ix - 1];
-                else
+                if (ix > 0 && ix <= FedConstants.BLE_MAC_LIST_ALL.length) {
+                    ble_mac_list[i] = FedConstants.BLE_MAC_LIST_ALL[ix - 1].toUpperCase();
+                    ScanFilter sf = new ScanFilter.Builder().setDeviceAddress(ble_mac_list[i]).build();
+                    if (scanFilters == null)
+                        scanFilters = new ArrayList<>();
+                    scanFilters.add(sf);
+
+                } else
                     ble_mac_list[i] = "xx";
             }
-        }
 
-        SharedPrefUtil.putSharedPrefBoolean(FedConstants.AT_HOME, true, context);
+        }
 
         fc = FEDConfigWrapper.getFEDConfig();
         sbBle = new StringBuilder();
         handler = new Handler();
         handler.postDelayed(beaconRunnable, 5 * 1000);
 
+        atHomeStatus = 0;
+        SharedPrefUtil.putSharedPrefInt(FedConstants.AT_HOME, atHomeStatus, context);
+        putAtHomeInfo();
+
         setAlarm();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(FedConstants.BROADCAST_FOR_BLE));
+
+        //registerReceiver(wifiBCastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
     @Override
@@ -147,6 +168,7 @@ public class BLEService extends Service {
     @Override
     public void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        //unregisterReceiver(wifiBCastReceiver);
         handler.removeCallbacks(beaconRunnable);
         startBLE(false);
         startSensorService(false);
@@ -167,6 +189,77 @@ public class BLEService extends Service {
 
     }
 
+    private Runnable beaconRunnable = new Runnable() {
+        @Override
+        public void run() {
+            //Log.i(FedConstants.MYTAG, "BLE service runnable Handler called");
+            currentTime = System.currentTimeMillis();
+            if (timeSyncRequire) {
+                if (SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_WATCH, context) > 0 && SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_RESPONSE_PERIOD, context) < fc.time_sync_min_response_time) {
+                    timeSyncRequire = false;
+                    //startSensorService(true);
+                    fileStartTime = System.currentTimeMillis();
+                    fileName = FEDUtils.getFileName(context, fileStartTime, "ble", serviceStartTime, fileIndex);
+                    SharedPrefUtil.putSharedPref(FedConstants.RUNNING_BLE_FILENAME, fileName, context);
+
+                } else {
+                    boolean netServiceRunning = ServiceUtils.isMySensorServiceRunning(context, NetService.class.getName());
+                    if (!netServiceRunning)
+                        startService(new Intent(context, NetService.class).putExtra(FedConstants.DOWNLOAD_TIME, ""));
+
+                    handler.postDelayed(beaconRunnable, fc.time_sync_repeat_try_interval);
+                    return;
+                }
+            }
+
+            if (bleStatus) {
+                startBLE(false);
+                putBatteryInfo(FedConstants.WATCH_INFO_CODE_BATTERY_PCT_REGULAR);
+
+                if (bleFound)
+                    SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_TIME_BLE_FOUND, lastTimeBleFound, context);
+
+
+                boolean no_beacon = SharedPrefUtil.getSharedPrefBoolean(FedConstants.NO_BEACON, context);
+                if (no_beacon || bleFound) {
+                    noBleFoundCount = 0;
+                    if(atHomeStatus<=0){
+                        startSensorService(true);
+                        atHomeStatus = 1;
+                        SharedPrefUtil.putSharedPrefInt(FedConstants.AT_HOME, atHomeStatus, context);
+                        putAtHomeInfo();
+                    }
+
+                } else {
+                    noBleFoundCount++;
+                    if (noBleFoundCount >= 3 && atHomeStatus>=0) {
+                        startSensorService(false);
+                        atHomeStatus = -1;
+                        SharedPrefUtil.putSharedPrefInt(FedConstants.AT_HOME, atHomeStatus, context);
+                        putAtHomeInfo();
+                    }
+                }
+
+                if (currentTime - lastDataSentTime > fc.max_battery_send_interval) {
+                    saveData(true, "Max Data Send interval");
+                } else
+                    saveData(false, "Regular Interval");
+
+                if (atHomeStatus >= 0)
+                    handler.postDelayed(beaconRunnable, fc.ble_scan_interval);
+                else
+                    handler.postDelayed(beaconRunnable, 2 * fc.ble_scan_interval);
+
+
+            } else {
+                bleFound = false;
+                startBLE(true);
+                handler.postDelayed(beaconRunnable, fc.ble_scan_duration);
+            }
+        }
+    };
+
+
     void startBLE(boolean flag) {
         if (bleScanner == null) {
             bleScanner = mBluetoothAdapter.getBluetoothLeScanner();
@@ -176,20 +269,18 @@ public class BLEService extends Service {
 
         if (flag != bleStatus) {
             currentTime = System.currentTimeMillis();
-            if (flag == false) {
+            if (flag) {
+                //bleScanner.startScan(mScanCallBack);
+                bleScanner.startScan(scanFilters, scanSettings, mScanCallBack);
+                bleStatus = true;
+                SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_TIME_BLE_STARTED, currentTime, context);
+                Log.i(FedConstants.MYTAG, "BLE Started at: " + DateTimeUtils.getDateTimeString(currentTime));
+
+            } else {
                 bleScanner.stopScan(mScanCallBack);
                 bleStatus = false;
                 Log.i(FedConstants.MYTAG, "BLE Stopped at:" + DateTimeUtils.getDateTimeString(currentTime) + ", BLE found: " + bleFound);
-
-                SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_TIME_BLE_FOUND, lastTimeBleFound, context);
                 SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_TIME_BLE_STOPPED, currentTime, context);
-
-            } else {
-                Log.i(FedConstants.MYTAG, "BLE Started at: " + DateTimeUtils.getDateTimeString(currentTime));
-                SharedPrefUtil.putSharedPrefLong(FedConstants.LAST_TIME_BLE_STARTED, currentTime, context);
-                bleFound = false;
-                bleScanner.startScan(mScanCallBack);
-                bleStatus = true;
             }
         }
     }
@@ -205,10 +296,10 @@ public class BLEService extends Service {
         public void onScanResult(int callbackType, ScanResult result) {
             //super.onScanResult(callbackType, result);
             mac = result.getDevice().getAddress();
-            mac = mac.toLowerCase().replace(":", "");
+            /*mac = mac.toLowerCase().replace(":", "");
             if (!searchBLEMac(mac)) {
                 return;
-            }
+            }*/
 
             bleFound = true;
             lastTimeBleFound = System.currentTimeMillis();
@@ -231,19 +322,18 @@ public class BLEService extends Service {
         @Override
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
-            /*sbBle.append(System.currentTimeMillis());
-            sbBle.append(",");
-            sbBle.append(-1);
-            sbBle.append(",");
-            sbBle.append(errorCode);
-            sbBle.append("\n");*/
             Log.i(FedConstants.MYTAG, "BLE errorcode " + errorCode);
         }
 
     };
 
+
     public void saveData(boolean newFile, String msg) {
         Log.i(FedConstants.MYTAG, "BLE Save Data Called: " + newFile + ", " + msg);
+        if (fileName == null) {
+            sbBle.setLength(0);
+            return;
+        }
 
         if (sbBle.length() > 0) {
             FileUtils.appendStringToFile(fileName, sbBle.toString(), true);
@@ -269,6 +359,7 @@ public class BLEService extends Service {
     }
 
     public void setAlarm() {
+        // for daily battery alarm sent to base station at some time (eg. 7:30am)
         long diff = SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_SERVER, context) - SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_WATCH, context);
         int t = fc.alarm_hour * 60 + fc.alarm_minute;
         t = t - (int) diff / (60 * 1000);
@@ -292,59 +383,27 @@ public class BLEService extends Service {
                 AlarmManager.INTERVAL_DAY, alarmIntent);
     }
 
-    private Runnable beaconRunnable = new Runnable() {
-        @Override
-        public void run() {
-            //Log.i(FedConstants.MYTAG, "BLE service runnable Handler called");
-
-            if (timeSyncRequire) {
-                if (SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_WATCH, context) > 0 && SharedPrefUtil.getSharedPrefLong(FedConstants.TIME_SYNC_RESPONSE_PERIOD, context) < fc.time_sync_min_response_time) {
-                    timeSyncRequire = false;
-                    startSensorService(true);
-
-                } else {
-                    boolean netServiceRunning = ServiceUtils.isMySensorServiceRunning(context, NetService.class.getName());
-                    if (!netServiceRunning)
-                        startService(new Intent(context, NetService.class).putExtra(FedConstants.DOWNLOAD_TIME, ""));
-
-                    handler.postDelayed(beaconRunnable, fc.time_sync_repeat_try_interval);
-                    return;
-                }
-            }
-
-            if (bleStatus == true) {
-                startBLE(false);
-                putBatteryInfo(FedConstants.WATCH_INFO_CODE_BATTERY);
-
-                currentTime = System.currentTimeMillis();
-                if (currentTime - lastDataSentTime > fc.max_battery_send_interval) {
-                    saveData(true, "Max Data Send interval");
-                } else
-                    saveData(false, "Regular Interval");
-
-                handler.postDelayed(beaconRunnable, fc.ble_scan_interval);
-
-
-            } else {
-                startBLE(true);
-                handler.postDelayed(beaconRunnable, fc.ble_scan_duration);
-            }
-        }
-    };
-
-
     void putBatteryInfo(int code) {
         sbBle.append(System.currentTimeMillis());
         sbBle.append(",");
         sbBle.append(code);
         sbBle.append(",");
         if (isPlugged())
-            sbBle.append(FedConstants.WATCH_INFO_CODE_PLUGGED);
+            sbBle.append(FedConstants.WATCH_INFO_CODE_IS_PLUGGED);
         else
             sbBle.append(FedConstants.WATCH_INFO_CODE_NOT_PLUGGED);
 
         sbBle.append(",");
         sbBle.append(batteryStatus());
+        sbBle.append("\n");
+    }
+
+    void putAtHomeInfo() {
+        sbBle.append(System.currentTimeMillis());
+        sbBle.append(",");
+        sbBle.append(FedConstants.WATCH_INFO_CODE_LOCATION);
+        sbBle.append(",");
+        sbBle.append(SharedPrefUtil.getSharedPrefInt(FedConstants.AT_HOME, context));
         sbBle.append("\n");
     }
 
@@ -408,38 +467,43 @@ public class BLEService extends Service {
         }
     }
 
-    /*public class fileSaveThread extends Thread {
-        StringBuilder sb;
-        boolean newFile;
-
-        public fileSaveThread(StringBuilder sb, boolean newFile) {
-            this.sb = sb;
-            this.newFile = newFile;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Log.i("Thread Called", "for saving ble samples");
-                FileUtils.appendStringToFile(fileName, sb.toString(), true);
-                if (newFile) {
-                    fileStartTime = System.currentTimeMillis();
-                    fileIndex++;
-                    fileName = FEDUtils.getFileName(context, fileStartTime, "ble", serviceStartTime, fileIndex);
-                    SharedPrefUtil.putSharedPref(FedConstants.RUNNING_BLE_FILENAME, fileName, context);
-                    writtenToFile = false;
-                }
-
-            } catch (Exception ex) {
-                Log.i(FedConstants.MYTAG, "BLE File Save Error: " + ex.toString());
-            }
-        }
-
-    }*/
-
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+
+
+    /*BroadcastReceiver wifiBCastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent intent) {
+            List<android.net.wifi.ScanResult> results = wifiManager.getScanResults();
+            lastTimeWiFiScanned = System.currentTimeMillis();
+
+            if (wifiScanCalled) //wifi scan called manually
+                wifiScanStatus = -2;
+            else
+                wifiScanStatus = -1;
+
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).SSID == SharedPrefUtil.getSharedPref(FedConstants.WIFI_SSID, context)) {
+                    lastTimeM2FEDFound = lastTimeWiFiScanned = System.currentTimeMillis();
+                    sbBle.append(lastTimeWiFiScanned + ",2001," + results.get(i).timestamp + "," + results.get(i).level+"\n");
+
+                    if (wifiScanCalled) //wifi scan called manually
+                        wifiScanStatus = 2;
+                    else
+                        wifiScanStatus = 1;
+
+
+                    break;
+                }
+            }
+
+            sbBle.append(lastTimeWiFiScanned + ",2002," + wifiScanStatus + "," + results.size()+"\n");
+            wifiScanCalled = false;
+
+        }
+    };*/
 }

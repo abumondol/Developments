@@ -10,7 +10,8 @@ public class NursingActivity {
         
         try{
             //DataSummary.analyzeNurseIDs(1);
-            DataSummary.analyzeActivities();
+            //DataSummary.analyzeActivities();
+            ProcessLabels.process_labels();
             
         }catch(Exception ex){
             ex.printStackTrace();

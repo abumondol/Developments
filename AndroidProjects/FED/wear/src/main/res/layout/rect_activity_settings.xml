@@ -15,26 +15,11 @@
         android:text="Settings" />
 
     <CheckBox
-        android:id="@+id/cbUsePattern"
+        android:id="@+id/cbNoBeacon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="btnClick"
-        android:text="Use patterns" />
-
-    <CheckBox
-        android:id="@+id/cbAtHomeOnly"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="btnClick"
-        android:text="At Home Only" />
-
-    <CheckBox
-        android:id="@+id/cbTestMeals"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="btnClick"
-        android:text="Test Meals" />
-
+        android:text="No Beacon" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -54,6 +39,8 @@
             android:layout_height="wrap_content"
             android:onClick="btnClick"
             android:text="Reset" />
+
+
 
     </LinearLayout>
 

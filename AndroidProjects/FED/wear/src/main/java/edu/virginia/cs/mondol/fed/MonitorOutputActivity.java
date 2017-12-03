@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -103,39 +102,25 @@ public class MonitorOutputActivity extends Activity {
                     SharedPrefUtil.putSharedPref(FedConstants.SERVER_IP, nc.server_ip, context);
 
                     String s = "";
+                    String macs = "";
                     for (int i = 0; i < nc.beacon_indices.length; i++) {
-                        if (i == nc.beacon_indices.length - 1)
-                            s += nc.beacon_indices[i];
-                        else
-                            s += nc.beacon_indices[i] + ",";
+                        int ix = nc.beacon_indices[i];
+                        s += ix;
+                        if (ix > 0 && ix <= FedConstants.BLE_MAC_LIST_ALL.length) {
+                            macs += FedConstants.BLE_MAC_LIST_ALL[ix - 1];
+                        } else
+                            macs += "XX";
+
+                        if (i < nc.beacon_indices.length - 1) {
+                            s += ", ";
+                            macs += ", ";
+                        }
                     }
 
-                    SharedPrefUtil.putSharedPref(FedConstants.BLE_MAC_INDICES_STRING, s, context);
+                    SharedPrefUtil.putSharedPref(FedConstants.BLE_MAC_INDICES_STRING, s.replace(" ", ""), context);
                     nc = FEDConfigWrapper.getNetConfig(context);
                     String str = "SSID: " + nc.wifi_ssid + "\nPASSWORD: " + nc.wifi_password + "\nIP: " + nc.server_ip + "\nBeacons: " + nc.beacon_indices_str;
-
-                    int use_code = SharedPrefUtil.getSharedPrefInt(FedConstants.PATTERN_USE, context);
-                    if (use_code > 0) {
-                        int pattern_version = 0, pattern_size = 0;
-                        try {
-                            float[][][][] patterns = FileUtils.getPatterns();
-                            if (patterns != null) {
-                                pattern_version = (int) patterns[0][0][0][0];
-                                pattern_size = patterns.length - 1;
-                                SharedPrefUtil.putSharedPrefInt(FedConstants.PATTERN_VERSION, pattern_version, context);
-                                SharedPrefUtil.putSharedPrefInt(FedConstants.PATTERN_SIZE, pattern_size, context);
-                            } else {
-                                pattern_version = -1;
-                                pattern_size = -1;
-
-                            }
-                        } catch (Exception ex) {
-                            Log.i(FedConstants.MYTAG, ex.toString());
-                            pattern_version = -5;
-                            pattern_size = -5;
-                        }
-                        str += "\nPattern:" + pattern_version + ", " + pattern_size;
-                    }
+                    str += " >> " + macs;
 
                     tvOutput.setText(str);
 

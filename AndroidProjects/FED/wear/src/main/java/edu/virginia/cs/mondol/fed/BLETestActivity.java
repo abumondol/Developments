@@ -5,8 +5,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -15,6 +17,7 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.virginia.cs.mondol.fed.config.FEDConfigWrapper;
@@ -27,6 +30,8 @@ public class BLETestActivity extends Activity {
     private PowerManager.WakeLock wakeLock;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner bleScanner;
+    private ScanSettings scanSettings;
+    private ArrayList<ScanFilter> scanFilters;
     private TextView mTextView;
     String mac;
     Context context;
@@ -68,6 +73,9 @@ public class BLETestActivity extends Activity {
                 (BluetoothManager) getSystemService(this.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         bleScanner = mBluetoothAdapter.getBluetoothLeScanner();
+        scanSettings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
 
         MyNetConfig nc = FEDConfigWrapper.getNetConfig(context);
         ble_mac_count = 0;
@@ -82,18 +90,25 @@ public class BLETestActivity extends Activity {
             ble_scan_interval = new long[ble_mac_count];
 
             for (int i = 0; i < ble_mac_count; i++) {
-                ble_last_scan_time[ix] = System.currentTimeMillis();
-                int ix = nc.beacon_indices[i];
-                if (ix > 0 && ix <= FedConstants.BLE_MAC_LIST_ALL.length)
-                    ble_mac_list[i] = FedConstants.BLE_MAC_LIST_ALL[ix - 1];
+                ble_last_scan_time[i] = System.currentTimeMillis();
+                ix = nc.beacon_indices[i];
+                if (ix > 0 && ix <= FedConstants.BLE_MAC_LIST_ALL.length) {
+                    ble_mac_list[i] = FedConstants.BLE_MAC_LIST_ALL[ix - 1].toUpperCase();
+                    if(scanFilters==null)
+                        scanFilters = new ArrayList<>();
+                    ScanFilter sf = new ScanFilter.Builder().setDeviceAddress(ble_mac_list[i]).build();
+                    scanFilters.add(sf);
+                }
                 else
                     ble_mac_list[i] = "xx";
             }
+
+            for(int i=0;i<ble_mac_list.length;i++)
+                Log.i("MyTAG", "Listed MAC: "+ble_mac_list[i]);
         }
 
         Log.i("Test Beacon count: ", ble_mac_count + "");
-        refresh();
-        bleScanner.startScan(mScanCallBack);
+        bleScanner.startScan(scanFilters, scanSettings, mScanCallBack);
 
 
     }
@@ -119,7 +134,7 @@ public class BLETestActivity extends Activity {
 
             //super.onScanResult(callbackType, result);
             mac = result.getDevice().getAddress();
-            mac = mac.toLowerCase().replace(":", "");
+            Log.i("MyTAG", "Scanned Mac: "+mac);
             ix = searchBLEMac(mac);
             status = ix+"/"+ble_mac_count+": "+mac;
             if (ix < 0) {
@@ -165,8 +180,9 @@ public class BLETestActivity extends Activity {
                 String s = "BEACON Scan Results:\n";
                 try {
                     for (int i = 0; i < ble_mac_count; i++) {
-                        s += String.format("%d:%s,%d,%d,%.2f\n", ble_mac_indices[i], ble_mac_list[i], ble_tx[i], ble_rssi[i], ble_scan_interval[i] / 1000.0+","+beaconUUID[ix]);
+                        s += String.format("%d:%s,%d,%d,%.2f\n", ble_mac_indices[i], ble_mac_list[i], ble_tx[i], ble_rssi[i], ble_scan_interval[i] / 1000.0);
                     }
+
                     mTextView.setText(s);
 
                 } catch (Exception ex) {

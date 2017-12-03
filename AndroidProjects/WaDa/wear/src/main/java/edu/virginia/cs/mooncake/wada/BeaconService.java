@@ -5,8 +5,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -14,6 +16,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.virginia.cs.mooncake.wada.utils.FileUtil;
@@ -24,6 +27,8 @@ public class BeaconService extends Service {
     private PowerManager.WakeLock wakeLock;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner bleScanner;
+    private ScanSettings scanSettings;
+    private ArrayList<ScanFilter> scanFilters;
     Context context;
 
     boolean bleStatus = false;
@@ -49,6 +54,10 @@ public class BeaconService extends Service {
                 (BluetoothManager) getSystemService(this.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         bleScanner = mBluetoothAdapter.getBluetoothLeScanner();
+
+        scanSettings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
 
         context = this.getApplicationContext();
         currentTime = System.currentTimeMillis();
@@ -98,7 +107,8 @@ public class BeaconService extends Service {
                 bleStatus = false;
 
             } else {
-                bleScanner.startScan(mScanCallBack);
+                //bleScanner.startScan(mScanCallBack);
+                bleScanner.startScan(scanFilters, scanSettings, mScanCallBack);
                 bleStatus = true;
             }
         }

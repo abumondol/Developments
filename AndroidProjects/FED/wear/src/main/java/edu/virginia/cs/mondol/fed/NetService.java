@@ -56,7 +56,8 @@ public class NetService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.hasExtra("stop")) {
+        int atHomeStatus = SharedPrefUtil.getSharedPrefInt(FedConstants.AT_HOME, context);
+        if (intent != null && intent.hasExtra("stop") || atHomeStatus<0) {
             stopSelf(startId);
         } else if (intent != null && intent.hasExtra(FedConstants.DOWNLOAD_TIME)) {
             downloadTime = true;
@@ -69,6 +70,7 @@ public class NetService extends Service {
 
     @Override
     public void onDestroy() {
+        handler.removeCallbacks(netRunnable);
         wakeLock.release();
         super.onDestroy();
 

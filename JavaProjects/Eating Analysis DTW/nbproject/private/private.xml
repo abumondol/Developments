@@ -2,16 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/data_processing/DataManagerSteven.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/bite_train_test/ReTrainingAndTest.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/myutils/MyArrayUtils.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/eating/analysis/dtw/EatingAnalysisDTW.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/bite_train_test/ReTrainingUtils.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/bite_train_test/Testing.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/constants_config/MyParameters.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/pattern/PotentialIndexFinder.java</file>
-            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/Eating%20Analysis%20DTW/src/bite_train_test/TestUtils.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

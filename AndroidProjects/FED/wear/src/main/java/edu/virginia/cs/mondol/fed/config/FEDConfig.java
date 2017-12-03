@@ -10,8 +10,8 @@ public class FEDConfig {
     public int version = 5 * 1000;
     public int ble_initial_wait_time = 5 * 1000;
     public int ble_data_save_interval = 10 * 60 * 1000;
-    public int ble_scan_interval = 105 * 1000;
-    public int ble_scan_duration = 15 * 1000;
+    public int ble_scan_interval = 115 * 1000;
+    public int ble_scan_duration = 5 * 1000;
     public int time_sync_repeat_try_interval = 30 * 1000;
     public int time_sync_min_response_time = 1000;
     public int max_battery_send_interval = 60 * 60 * 1000;

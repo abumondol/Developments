@@ -76,7 +76,7 @@ public class FEDConfigWrapper {
             String[] sarr = s.split(",");
             nc.beacon_indices = new int[sarr.length];
             for(int i=0;i<sarr.length;i++){
-                nc.beacon_indices[i] = Integer.parseInt(sarr[i]);
+                nc.beacon_indices[i] = Integer.parseInt(sarr[i].trim());
             }
         }
 

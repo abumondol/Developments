@@ -63,14 +63,6 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:launchMode="singleTask" />
-        <activity
-            android:name=".NetConfigActivity"
-            android:label="@string/title_activity_net_config"
-            android:launchMode="singleTask" />
-        <activity
-            android:name=".ConfigActivity"
-            android:label="@string/title_activity_config"
-            android:launchMode="singleTask" />
 
         <service
             android:name=".SensorService"

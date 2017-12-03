@@ -2,6 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/NursingActivity/src/nursingactivity/NursingActivity.java</file>
+            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/NursingActivity/src/myutils/MyFileUtils.java</file>
+            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/NursingActivity/src/nursingactivity/DataSummary.java</file>
+            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/NursingActivity/src/nursingactivity/ExtractedVals.java</file>
+            <file>file:/C:/ASM/Dropbox/Developments/JavaProjects/NursingActivity/src/nursingactivity/ProcessLabels.java</file>
+        </group>
     </open-files>
 </project-private>

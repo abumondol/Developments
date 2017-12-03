@@ -6,10 +6,8 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.ObjectInputStream;
 
 import edu.virginia.cs.mondol.fed.config.MyNetConfig;
 
@@ -232,7 +230,7 @@ public class FileUtils {
 
     }
 
-    public static float[][][][] getPatterns(){
+    /*public static float[][][][] getPatterns(){
         String filename = Environment.getExternalStorageDirectory() + "/fed_config/patterns.ser";
         File file = new File(filename);
 
@@ -251,9 +249,7 @@ public class FileUtils {
             return null;
         }
 
-    }
-
-
+    }*/
 
 
 }

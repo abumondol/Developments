@@ -107,9 +107,11 @@ public class WatchMainActivity extends Activity {
         bt = (System.currentTimeMillis() - bt) / 1000;
 
         String str = "FED: ";
-        str += bleServiceStatus ? "B, " : "BX, ";
-        str += sensorServiceStatus ? "S, " : "SX, ";
-        str += (bt / 60) + "m " + bt % 60 + "s";
+        str += bleServiceStatus ? "B," : "BX,";
+        str += sensorServiceStatus ? " S, " : " SX, ";
+        str += SharedPrefUtil.getSharedPrefInt(FedConstants.AT_HOME, this.getApplicationContext()) + "; " ;
+        str += (bt / 3600) + ":" + ((bt % 3600) / 60) + ":" + bt % 60;
+
         tvStatus.setText(str);
 
         if (sensorServiceStatus || bleServiceStatus) {
