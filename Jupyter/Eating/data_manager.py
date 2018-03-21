@@ -11,7 +11,7 @@ import os
 # In[2]:
 
 def get_root_path():
-    return "C:\\ASM\\DevData\\eating\\python\\"
+    return "E:\\DevData\\eating\\"
 
 def get_slash():
     return "\\"
