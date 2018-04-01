@@ -5,6 +5,23 @@
 
 
 import numpy as np
+import os
+
+
+# In[3]:
+
+
+def create_directory(path):
+    if not os.path.exists(path):
+        print('Creating directory: ', path)
+        os.makedirs(path)
+        
+def get_one_hot(labels, num_classes):
+    count = len(labels)
+    res = np.zeros((count, num_classes), dtype=int)
+    res[np.arange(count), labels] = 1
+    return res
+    
 
 
 # In[2]:
@@ -221,6 +238,7 @@ def get_windows_labels_for_dataset(ds, x_th=-0.3, var_th=0.25, min_bite_interval
                 windows_right = np.concatenate((windows_right, w_right), axis=0)
                 subject_session_mp_label = np.concatenate((subject_session_mp_label, ssml), axis=0)
     
-    subject_session_mp_label = subject_session_mp_label.astype(int)
-    return windows, windows_left, windows_right, subject_session_mp_label
+    ssml = subject_session_mp_label.astype(int)
+    labels = get_one_hot(ssml[:,-1], num_classes=3)
+    return windows, windows_left, windows_right, ssml, labels
 
