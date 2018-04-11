@@ -59,24 +59,24 @@ def one_axis_conv_net(x, name):
     print("  Axis count: ", axis_count)
     with tf.name_scope(name):
         x = tf.reshape(x, shape=[-1, x.shape[1], x.shape[2], 1], name="reshape")
-        conv_1 = conv_layer(x, size_in=1, size_out=16, ksize=[5,axis_count], strides=[1,axis_count], padding="VALID", name='conv_1')        
-        maxpool_1 = maxpool_layer(conv_1, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_1")
+        conv_1 = conv_layer(x, size_in=1, size_out=32, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_1')        
+        maxpool_1 = maxpool_layer(conv_1, ksize=[4,1], strides=[4,1], padding="VALID", name="maxpool_1")
         print("  Conv_1, maxpool_1 shape: ", conv_1.get_shape().as_list(), maxpool_1.get_shape().as_list())
 
-        conv_2 = conv_layer(maxpool_1, size_in=16, size_out=32, ksize=[5,1], strides=[1,1], padding="VALID", name='conv_2')
-        maxpool_2 = maxpool_layer(conv_2, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        conv_2 = conv_layer(maxpool_1, size_in=32, size_out=64, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_2')
+        maxpool_2 = maxpool_layer(conv_2, ksize=[4,1], strides=[4,1], padding="VALID", name="maxpool_2")
         print("  Conv_2, maxpool_2 shape: ", conv_2.get_shape().as_list(), maxpool_2.get_shape().as_list())
         
-        conv_3 = conv_layer(maxpool_2, size_in=32, size_out=64, ksize=[5,1], strides=[1,1], padding="VALID", name='conv_3')
-        maxpool_3 = maxpool_layer(conv_3, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_3")
-        print("  Conv_3, maxpool_3 shape: ", conv_3.get_shape().as_list(), maxpool_3.get_shape().as_list())
+        #conv_3 = conv_layer(maxpool_2, size_in=64, size_out=128, ksize=[5,1], strides=[1,1], padding="VALID", name='conv_3')
+        #maxpool_3 = maxpool_layer(conv_3, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_3")
+        #print("  Conv_3, maxpool_3 shape: ", conv_3.get_shape().as_list(), maxpool_3.get_shape().as_list())
         
-        sz = maxpool_3.get_shape().as_list()
-        flattened = tf.reshape(maxpool_3, shape=[-1, sz[1]*sz[2]*sz[3]], name="Flattened")
+        sz = maxpool_2.get_shape().as_list()
+        flattened = tf.reshape(maxpool_2, shape=[-1, sz[1]*sz[2]*sz[3]], name="Flattened")
         return flattened
 
 
-# In[9]:
+# In[1]:
 
 
 def all_axes_net(x, y, keep_prob, name):
@@ -86,13 +86,15 @@ def all_axes_net(x, y, keep_prob, name):
     print(type(x_shape))
     
     with tf.name_scope(name):
-        all_axes = list(range(x_shape[-1]))
-        for i in range(x_shape[-1]):
-            axis_data = x[:, :, i]
-            axis_data = tf.reshape(axis_data, shape=[-1, x.shape[1], 1], name="reshape")
-            #axis_data = tf.slice(x, [0,0,i], [-1, -1, 1], name="slice_"+str(i))
-            all_axes[i] = one_axis_conv_net(axis_data, name="conv_axis_"+str(i))
-            print("Shape ", i, all_axes[i].get_shape().as_list())
+        all_axes = []
+        
+        #all_axes = list(range(x_shape[-1]))
+        #for i in range(x_shape[-1]):
+        #    axis_data = x[:, :, i]
+        #    axis_data = tf.reshape(axis_data, shape=[-1, x.shape[1], 1], name="reshape")
+        #    #axis_data = tf.slice(x, [0,0,i], [-1, -1, 1], name="slice_"+str(i))
+        #    all_axes[i] = one_axis_conv_net(axis_data, name="conv_axis_"+str(i))
+        #    print("Shape ", i, all_axes[i].get_shape().as_list())
             
         
         for i in range(0, x_shape[-1], 3):
@@ -106,13 +108,13 @@ def all_axes_net(x, y, keep_prob, name):
         combo_shape = combo_flattened.get_shape().as_list()
         print("Combo shape one net: ", combo_shape)
 
-        fc_1 = fc_layer(combo_flattened, combo_shape[-1], 512, name='FC_1', relu=True)
+        fc_1 = fc_layer(combo_flattened, combo_shape[-1], 256, name='FC_1', relu=True)
         fcdrop_1 = tf.nn.dropout(fc_1, keep_prob, name='fcdrop_1')    
-        fc_2 = fc_layer(fcdrop_1, 512, 512, name='FC_2', relu=True)
+        fc_2 = fc_layer(fcdrop_1, 256, 128, name='FC_2', relu=True)
         fcdrop_2 = tf.nn.dropout(fc_2, keep_prob, name='fcdrop_2') 
         #fc_3 = fc_layer(fcdrop_2, 512, 512, name='FC_3', relu=True)
         #fcdrop_3 = tf.nn.dropout(fc_3, keep_prob, name='fcdrop_3') 
-        logits = fc_layer(fcdrop_2, 512, y_shape[-1], name='FC_Final')
+        logits = fc_layer(fcdrop_2, 128, y_shape[-1], name='FC_Final')
         return logits
 
 
@@ -187,11 +189,13 @@ def train_test_model(train_x, train_y, test_x, test_y, folder_path, params, save
     logits = all_axes_net(x, y, keep_prob, name="all_axes_net")
     print("Logit shape: ",logits.get_shape().as_list())
     prediction = tf.nn.sigmoid(logits, name="prediction")
-    correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1), name="correct_prediction")
     
-
+    #correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1), name="correct_prediction")
+    correct_prediction = tf.equal(tf.greater(prediction, 0.5), tf.equal(y,1), name="correct_prediction")
+    
+    
     loss_op = tf.reduce_mean(
-        tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=y), name="loss_op")
+        tf.nn.weighted_cross_entropy_with_logits(logits=logits, targets=y, pos_weight=0.2), name="loss_op")
     #tf.summary.scalar("loss_op_summary", loss_op)
 
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss_op, name="train_step")

@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import numpy as np
@@ -12,25 +12,25 @@ import matplotlib.pyplot as plt
 import my_bite_detection_utils as bdu
 
 
-# In[3]:
+# In[14]:
 
 
 #importlib.reload(mtu)
 importlib.reload(bdu)
 
 
-# In[4]:
+# In[3]:
 
 
 with open('C:/ASM/DevData/eating/data/steven_uva_lab_data_combined.pkl', 'rb') as file:
     ds = pickle.load(file)
 
 
-# In[5]:
+# In[15]:
 
 
 x_th = 0
-min_bite_interval = 2*16
+min_bite_interval = 3*16
 window_size = 6*16
 max_annot_distance = 3*16
 
@@ -74,7 +74,7 @@ for subject in range(len(ds)):
                 
         xv = np.zeros((len(mps), 2))        
         xv[:, 0] = data[mps, 1]        #grav x        
-        print(np.sum(xv[:, 0]>1))
+        #print(np.sum(xv[:, 0]>1))
         w = bdu.get_windows(data[:, 1:], mps, window_size)        
         xv[:, 1] = bdu.get_variance(w, 3, 5) #accel var        
         x_var_mps = np.concatenate((x_var_mps, xv), axis=0)
@@ -102,46 +102,49 @@ for subject in range(len(ds)):
         var_annots = np.concatenate((var_annots, va), axis=0)                
 
 
-# In[6]:
+# In[16]:
 
 
 print(len(sub_sess_mps))
-print(total_duration, window_duration, len(sub_sess_mps)*6, 100*window_duration/total_duration)
+#print(total_duration, window_duration, len(sub_sess_mps)*6, 100*window_duration/total_duration)
 
 
-# In[7]:
+# In[22]:
 
 
 #Windows
-total, neg, bite, sip = len(mp_covs), np.sum(mp_covs[:,0]==0), np.sum(mp_covs[:,0]==1), np.sum(mp_covs[:,0]==2)
-print("Windows total, neg, bite, sip: ", total, neg, bite, sip)
+total, neg, pos, x  = len(mp_covs), np.sum(mp_covs[:,0]==0), np.sum(mp_covs[:,0]>=1), np.sum(mp_covs[:,0]==-1)
+bite, sip = np.sum(mp_covs[:,0]==1), np.sum(mp_covs[:,0]==2)
+print("Windows total:{}, neg:{}, pos:{}, bite:{}, sip:{}, X:{}".format(total, neg, pos, bite, sip, x))
+print("Column wise mps covered by multi annots:", np.sum(mp_covs>=1, axis=0))
 
 
-# In[6]:
-
-
-print(np.sum(mp_covs>=1, axis=0))
-
-
-# In[7]:
+# In[21]:
 
 
 #same window covered by different types of annots (both bite and sip)
 cond = (mp_covs[:,0]>=1) & (mp_covs[:,1]>=1) & (mp_covs[:,0]!=mp_covs[:,1])
 print(np.sum(cond))
-#sub_sess_mps[cond]
 
 
-# In[8]:
+# In[25]:
 
 
 #annots
 a = sub_sess_annots[:, 3]
 total, bite, sip = len(annot_covs), np.sum(a==1), np.sum(a==2)
+
+annot_missed = np.sum((annot_covs[:, 0]<0))
 bite_missed = np.sum((a==1) & (annot_covs[:, 0]<0))
 sip_missed = np.sum((a==2) & (annot_covs[:, 0]<0))
+
+annot_x = np.sum(annot_covs[:, 0]<=-10)
+bite_x = np.sum((a==1) & (annot_covs[:, 0]<=-10))
+sip_x = np.sum((a==2) & (annot_covs[:, 0]<=-10))
+
 print("GT Annots total, bite, sip: ", total, bite, sip)
-print("Annots missed bite, sip   : ", bite_missed, sip_missed)
+print("Annots missed total, bite, sip   : ", annot_missed, bite_missed, sip_missed)
+print("Don't care(X) total, bite, sip  : ", annot_x, bite_x, sip_x)
 
 
 # In[9]:

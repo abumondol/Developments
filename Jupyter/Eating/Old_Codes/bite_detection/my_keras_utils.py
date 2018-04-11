@@ -1,7 +1,8 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
+
 
 import numpy as np
 
@@ -11,9 +12,15 @@ from keras.optimizers import Adam
 from keras.losses import binary_crossentropy
 
 
-# In[ ]:
+# In[3]:
 
-def train_model(X_train, Y_train, batch_size, epochs):
+
+def train_model(X_train, Y_train, X_test, Y_test, batch_size, epochs):
+    s = X_train.shape
+    X_train = X_train.reshape((s[0], s[1], s[2], 1))
+    s = X_test.shape
+    X_test = X_test.reshape((s[0], s[1], s[2], 1))
+    
     input_shape = (X_train.shape[1], X_train.shape[2], 1)
 
     model = Sequential()
@@ -36,13 +43,17 @@ def train_model(X_train, Y_train, batch_size, epochs):
                   metrics=['accuracy'])
 
     model.fit(X_train, Y_train,
+              validation_data = (X_test, Y_test),
               batch_size=batch_size,
               epochs=epochs)
+    
+    ypr = model.predict(X_test, verbose=0)
 
-    return model
+    return ypr
 
 
 # In[ ]:
+
 
 def test_model(model, X_test, Y_test):
     Ypr = model.predict(X_test, verbose=0)
