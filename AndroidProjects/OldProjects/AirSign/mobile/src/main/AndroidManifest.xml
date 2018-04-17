@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.virginia.cs.mooncake.airsign" >
+
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".AirSignMainActivity"
+            android:launchMode="singleTask"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SignActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_sign"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SettingsActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".HelpActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_help"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".LoginActivity"
+            android:launchMode="singleTask"
+            android:label="AirSign Login"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CreateAccountActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_create_account"
+            android:screenOrientation="portrait"/>
+
+        <service
+            android:name=".ServiceMobileSensor"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".ServiceAirSign"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".ReceiverAirSign"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
+            android:name=".IntentServiceNetwork"
+            android:exported="false" />
+
+        <activity
+            android:name=".ShowResultActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_show_result"
+            android:screenOrientation="portrait" >
+        </activity>
+    </application>
+
+</manifest>

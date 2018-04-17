@@ -1,0 +1,67 @@
+@(name: String, id: String)
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>Data Collection Tool</title>
+
+        <link rel="stylesheet" href="/assets/css/mobile/mobile_home.css"  media="screen" type="text/css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+       
+         
+        <script>
+            var user_id = @id;
+        </script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        
+        <link rel="stylesheet" href="/assets/css/jquery.ptTimeSelect.css">
+        <script src="/assets/js/jquery.ptTimeSelect.js"></script>        
+        <script src="/assets/js/mobile/mobile_home.js"></script>
+    </head>
+
+
+    <body>
+        
+        <div id="divHeader" class="center width1200">
+            <p class="center"> Data Collection Tool </p>
+            <span > &nbsp; User Code:  @name </span>
+            <span id="spanA">               
+                <a href="#" onClick="logout();">logout</a>
+            </span>
+        </div>
+
+        <div id="divContainer" class="center width1200">
+            <div id="divLeft">
+                <br/>
+                <a href="/assets/files/guidelines.pdf" target="_blank">Guidelines</a><br/><br/>
+                <a href="/assets/files/data_collection_script.pdf" target="_blank">Script</a>
+            </div>
+
+            <div id="divRight">
+                <p> Subject:<select id="subject"></select> &nbsp;&nbsp;&nbsp;
+                    Activity: <select id="activity"></select>
+                    Position: <select id="position"></select>
+                    
+                    <button id="btnShowData"> Show </button>
+                    <span id="showNotification">Loading... Please Wait.</span>
+                </p>
+
+                <div id="divTable">
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="divFooter" class="center width1200">
+
+        </div>
+
+    </body>
+</html>
+

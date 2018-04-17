@@ -1,0 +1,55 @@
+tp = zeros(10,5);
+fp_hw = zeros(10,5);
+fp_eat = zeros(10,5);
+for s = 1:10
+    ai = data(s).annotation_indices;
+    ai_count = length(ai);
+    for ic = 1:5
+        res = my_results(s).ico(ic).res_hw;
+        selected = gen_data(s).ico(ic).selected_windows(s).hw;
+        res = res.*selected;
+        res_hw = res(1:2:end, :);
+        
+        res = my_results(s).ico(ic).res_eat;
+        selected = gen_data(s).ico(ic).selected_windows(s).eat;
+        res = res.*selected;
+        res_eat = res(1:2:end, :);
+        
+        events = find_events(res_hw);
+        events = events(events(:,2) - events(:,1)>=4, :);
+        events(:,1) = (events(:,1)-1)*50+1;
+        events(:,2) = events(:,1)*50;
+        pos_coutnt
+        for j = 1:ai_count
+            a = ai(j,1);
+            b = ai(j,2);
+            c1 = sum(events(:,1)<=a && events(:,2)>=b);
+            c2 = sum(events(:,1)<=b && events(:,2)>=a);            
+            c3 = sum(events(:,1)>=a && events(:,2)<=b);
+            if c1+c2+c3 >0
+                
+            
+        end
+
+        fprintf('%d, %d\n', ic, s);        
+        train = [];
+        test_hw = [];
+        test_eat = [];
+        for i = 1:10
+            if i == s
+                test_hw = features(i).hw;
+                test_eat = features(i).eat;            
+            else
+                
+            end
+        end
+            
+        B = fitctree(train(:, 1:end-1), train(:, end));
+        res_hw = predict(B, test_hw(:, 1:end-1));
+        res_eat = predict(B, test_hw(:, 1:end-1));
+        my_results(s).ico(ic).res_hw = res_hw;
+        my_results(s).ico(ic).res_eat = res_eat;
+    end
+end
+
+save('my_results', 'my_results');

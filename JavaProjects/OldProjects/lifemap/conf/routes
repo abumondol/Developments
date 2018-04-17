@@ -1,0 +1,67 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           		controllers.Application.index()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               		controllers.Assets.at(path="/public", file)
+
+
+#****************Lifemap routes ************************
+#Website Routes
+GET			/home							controllers.Lifemap.home()
+GET			/logout							controllers.Lifemap.logout()
+
+#AJAX Routes
+POST		/loginCheck						controllers.Lifemap.login()
+POST		/ajax							controllers.Lifemap.ajax()
+
+#***************** Other Link Routes ****************************
+POST		/external_data							controllers.Lifemap.external_data()
+
+
+
+#****************Mobile routes ************************
+
+#Web routes
+POST		/mobile_web_ajax				controllers.Mobile.web_ajax()
+GET			/mobile_web						controllers.Mobile.web_home()
+POST		/mobile_web_login_check			controllers.Mobile.web_login_check()
+GET			/mobile_web_login				controllers.Mobile.web_login()
+GET			/mobile_web_logout				controllers.Mobile.web_logout()
+
+
+# Data from smart phone
+POST	/phone/insertdata					controllers.Mobile.insertJsonData()
+POST	/phone/login 		  				controllers.Mobile.login()
+POST 	/phone/upload						controllers.Mobile.upload()
+POST 	/upload								controllers.Mobile.upload()
+
+
+#*********************Medical app routes****************
+POST 	/medical/phone						controllers.Medical.phone()
+GET 	/medical/image/:id					controllers.Medical.image(id: Integer)
+
+
+#*********************AirSign routes****************
+POST	/airsign/login 		  				controllers.Mobile.airsign_login()
+POST 	/airsign/create_account				controllers.Mobile.airsign_create_account()
+POST 	/airsign/upload						controllers.Mobile.upload()
+
+
+#*********************Patient Monitor Routes****************
+POST	/patient_monitor/login 		  				controllers.Mobile.login()
+POST 	/patient_monitor/upload						controllers.Mobile.upload()
+
+
+
+# *****************These are test routes ***********************
+#GET    /insertData							controllers.InsertData.insert1(data)
+GET 	/connectiontest						controllers.Mobile.connectionTest()
+#GET	/logintest 		  					controllers.Test.logintest(data)
+GET 	/show								controllers.Mobile.show(adate: String)
+#GET 	/enter								controllers.Medical.enter_form()
+
+

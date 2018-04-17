@@ -1,0 +1,125 @@
+@(name: String)
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>LifeMap - Home</title>
+
+        <link rel="stylesheet" href="/assets/css/home.css"  media="screen" type="text/css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        <script src="/assets/js/home.js"></script>
+    </head>
+
+
+    <body>
+
+        <div id="divHeader" class="center width1200">
+            <p class="center"> Life Map</p>
+            <span > &nbsp; User:  @name </span>
+            <span id="spanA">
+                <a href="#">Settings</a>
+                <a href="#" onClick="logout();">logout</a>
+            </span>
+        </div>
+
+        <div id="divContainer" class="center width1200">
+            <div id="divLeft">                
+                <!--
+                <p>Date Time</p>
+                <p><input type="text" id="datePicker1" class="datePicker"> <input type="text" id="time1"  class="timeBox"></p>
+                <p><input type="text" id="datePicker2"  class="datePicker"> <input type="text" id="time2" class="timeBox"></p>                
+                <input type="checkbox" id="cboxActivity" class="checkBox"/>Activity <br/>
+                <input type="checkbox" id="cboxLocation" class="checkBox"/>Location <br/><br/>
+                <button id="btnShow"> Show</button> 
+                -->
+
+                <p> Locomotive </p>
+                <input type="checkbox" id="cboxActivity" class="checkBox"/>Activity <br/>
+                <input type="checkbox" id="cboxLocation" class="checkBox"/>Location <br/><br/>
+
+                <p> Physiology </p>
+                <input type="checkbox" id="cboxHeartRate" class="checkBox"/>Heart Rate <br/>
+                <input type="checkbox" id="cboxBloodPressure" class="checkBox"/>Blood Pressure <br/><br/>        
+
+                <p> Social Network </p>
+                <input type="checkbox" id="cboxFacebook" class="checkBox"/>FaceBook <br/>
+                <input type="checkbox" id="cboxTwitter" class="checkBox"/>Twitter <br/><br/>
+
+                <p> Empath </p>
+                <input type="checkbox" id="cboxFacebook" class="checkBox"/>Sleep Monitor  <br/><br/>
+
+            </div>
+
+            <div id="divRight">
+                <div id="divActivity" class="divContent">
+                    <p class="title"> Activity</p>
+                    <p>Date: 
+                        <input type="text" id="datePicker1" class="datePicker">
+                        <button id="btnShowActivity"> Show</button> 
+                    </p>
+
+                    <div id="divActivityColorContainer" class="iniHide">                        
+                        <div class="divActivityColor" style="background-color: #FFFFFF"><input type="radio" name="activityColor" value="0"> No data </div>
+                        <div class="divActivityColor" style="background-color: #ABABAB"><input type="radio" name="activityColor" value="1"> No Motion </div>
+                        <div class="divActivityColor" style="background-color: #123456"><input type="radio" name="activityColor" value="2"> Sedentary </div>
+                        <div class="divActivityColor" style="background-color: #00FF00"><input type="radio" name="activityColor" value="3"> Walk </div>
+                        <div class="divActivityColor" style="background-color: #FF0000"><input type="radio" name="activityColor" value="4"> Run </div>                       
+                        <div class="divActivityColor" style="background-color: #0000FF"><input type="radio" name="activityColor" value="5"> Stair up</div>                       
+                        <div class="divActivityColor" style="background-color: #ABCDEF"><input type="radio" name="activityColor" value="6"> Stair down</div>                       
+                    </div>                      
+                    <div id="divActivityBarContainer" class="iniHide" style="clear:both">
+                        <img id="imgIdLoaderActivity" class="imgClassLoader" src="/assets/images/loader.gif"/>
+                    </div>                        
+
+                    <div id="slider_container" class="iniHide">
+                        <div id="slider-range"></div>
+                        <p>
+                            <label for="amount">Time range:</label>
+                            <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">                            
+                            <button id="btnIdSetActivity" > Set</button>
+                        </p>
+
+
+                    </div>
+                </div>
+
+                <div id="divLocation" class="divContent">
+                    <p class="title"> Location</p>
+                    <p>Date: 
+                        <input type="text" id="datePicker1" class="datePicker">
+                        <button id="btnShowLocation"> Show</button> 
+                    </p>
+
+                </div>
+
+                <div id="divHeartRate" class="divContent">
+                    <p class="title"> Heart Rate</p>
+                    <p> Date: <input type="text" id="datePicker1" class="datePicker"> From: <input type="text" id="time1"  class="timeBox">
+                        To: <input type="text" id="time2" class="timeBox"></p>             
+
+                </div>
+
+                <div id="divBloodPressure" class="divContent">
+                    <p class="title"> Blood Pressure</p>
+
+
+                </div>
+
+            </div>
+        </div>
+
+        <div id="divFooter" class="center width1200">
+
+
+        </div>
+
+    </body>
+</html>
+

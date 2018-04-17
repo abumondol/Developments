@@ -1,0 +1,115 @@
+@(name: String, id: String)
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>LifeMaps - Home</title>
+
+        <link rel="stylesheet" href="/assets/css/home.css"  media="screen" type="text/css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+
+        <script>
+            var user_id = @id;
+        </script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+
+        <link rel="stylesheet" href="/assets/css/jquery.ptTimeSelect.css">
+        <script src="/assets/js/jquery.ptTimeSelect.js"></script>        
+        <script src="/assets/js/home.js"></script>
+    </head>
+
+
+    <body>
+
+        <div id="dialog-see" title="Emotion, Experience and Story">
+            <div id='see-left'>
+                <fieldset id="fieldset-emotion">
+                    <legend>Emotion</legend>
+                    <span id='span-drag'></span>
+                </fieldset>
+            </div>
+
+            <div id='see-right'>
+                <fieldset id="fieldset-experience">                    
+                    <legend>Experience</legend>
+                    <input type="radio" name="1" value="1">I had a new experience or did something new<br/>
+                    <input type="radio" name="2" value="2">I was cared for, protected, helped, or loved by another<br/>
+                    <input type="radio" name="3" value="3">I cared for, protected, helped, or loved another<br/>
+                    <input type="radio" name="4" value="4">I gained the respect or admiration of others<br/>
+                    <input type="radio" name="5" value="5">I behaved well<br/>
+                    <hr>
+                    <input type="radio" name="1" value="101">I resisted having new experience or doing something new<br/>
+                    <input type="radio" name="2" value="102">I was neglected, exposed, hurt, or rejected by another<br/>
+                    <input type="radio" name="3" value="103">I neglected, exposed, hurt, or rejected another<br/>
+                    <input type="radio" name="4" value="104">I lost the respect or admiration of others<br/>
+                    <input type="radio" name="5" value="105">I behaved badly<br/>
+                </fieldset>
+                <fieldset id="fieldset-story">
+                    <legend>Story</legend>
+                    <textarea id="see-story"></textarea>
+                </fieldset>
+            </div>
+        </div>
+
+
+        <div id="divHeader" class="center width1200">
+            <p class="center"> LifeMaps </p>
+            <span > &nbsp; User Code:  @name </span>
+            <span id="spanA">               
+                <a href="#" onClick="logout();">logout</a>
+            </span>
+        </div>
+
+        <div id="divContainer" class="center width1200">
+            <div id="divLeft">
+                <p id="strand_header"> Strands </p>
+
+                <form action="#" onsubmit="">
+                    <input type="text" id="inputAddNewStrand" class="inputAddNewStrand" size="10">
+                    <button id="btnAddNewStrand">+</button>
+                </form>
+
+                <div id="divStrandContainer">
+
+                </div>
+
+            </div>
+
+            <div id="divRight">
+                <p>Date: 
+                    <input type="text" id="datePicker1" class="datePicker" readonly>
+                    <!-- <button id="btnShowDailyData"> Show </button> -->
+                    <span id="showNotification">Loading... Please Wait.</span>
+                    <button id="btnSave"> Save</button>
+                    <span id="saveNotification">Saving...</span>
+
+                </p>
+
+                <div id="divDailyData">
+                    <!--
+                    <a id="atlink" href="#">hide </a>
+                    <a id="ptlink" href="#">hide</a>
+                    -->
+                    <div id="divActivityTable"> </div>                
+                    <br/>   
+                    <div id="divDiaryTable"> </div>                            
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="divFooter" class="center width1200">
+                <button id="btnSendOtherData"> Send Other Data</button>
+                <span id="showOtherDataCount">Other Data: </span>
+        </div>
+
+    </body>
+</html>
+

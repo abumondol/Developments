@@ -1,0 +1,238 @@
+@(name: String)
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>LifeMap - Home</title>
+
+        <link rel="stylesheet" href="/assets/css/home.css"  media="screen" type="text/css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        <script src="/assets/js/home.js"></script>
+    </head>
+
+
+    <body>
+
+        <div id="dialog-form" title="Add Activity"> 
+            <form>
+                <fieldset>
+                    <label for="start_time">Start Time</label>
+                    <input type="text" name="add_start_time" id="add_start_time" class="text ui-widget-content ui-corner-all">
+                    <select id="add-ampm1"></select><br/><br/>
+                    <label for="end_time">End Time</label>
+                    <input type="text" name="add_end_time" id="add_end_time" class="text ui-widget-content ui-corner-all">
+                    <select id="add-ampm2"> </select><br/><br/>                   
+                    <label for="start_time">Type</label>
+                    <select id="add-activity-type"> </select><br/><br/>
+                    <label for="start_time">Activity</label>
+                    <select id="add-activity"> </select>
+                    <input type="text" name="add-activity-comment" id="add-activity-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Location</label>
+                    <select id="add-location"> </select>
+                    <input type="text" name="add-location-comment" id="add-location-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Done for</label>
+                    <select id="add-done-for"> </select>
+                    <input type="text" name="add-done-for-comment" id="add-done-for-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Done with</label>
+                    <select id="add-done-with"> </select>
+                    <input type="text" name="add-done-width-comment" id="add-done-with-tag" class="ui-corner-all"><br/><br/>
+                    <label for="add-comment">Comment</label>
+                    <input type="text" name="add-comment" id="add-comment" class="ui-corner-all"><br/>
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-form-edit" title="Edit Activity"> 
+            <form>
+                <fieldset>
+                    <label for="start_time">Start Time</label>
+                    <input type="text" name="edit_start_time" id="edit_start_time" class="text ui-widget-content ui-corner-all">
+                    <select id="edit-ampm1"></select><br/><br/>
+                    <label for="end_time">End Time</label>
+                    <input type="text" name="edit_end_time" id="edit_end_time" class="text ui-widget-content ui-corner-all">
+                    <select id="edit-ampm2"> </select><br/><br/>                   
+                    <label for="start_time">Type</label>
+                    <select id="edit-activity-type"> </select><br/><br/>
+                    <label for="start_time">Activity</label>
+                    <select id="edit-activity"> </select>
+                    <input type="text" name="edit-activity-comment" id="edit-activity-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Location</label>
+                    <select id="edit-location"> </select>
+                    <input type="text" name="edit-location-comment" id="edit-location-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Done for</label>
+                    <select id="edit-done-for"> </select>
+                    <input type="text" name="edit-done-for-comment" id="edit-done-for-tag" class="ui-corner-all"><br/><br/>
+                    <label for="start_time">Done with</label>
+                    <select id="edit-done-with"> </select>
+                    <input type="text" name="edit-done-width-comment" id="edit-done-with-tag" class="ui-corner-all"><br/><br/>
+                    <label for="edit-comment">Comment</label>
+                    <input type="text" name="edit-comment" id="edit-comment" class="ui-corner-all"><br/>
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-add-strand" title="Add New Strand">                           
+            <form>
+                <fieldset>
+                    <label for="start_time">Strand Name: </label>
+                    <input type="text" name="add-strand-name" id="add-strand-name" class="text ui-widget-content ui-corner-all">
+                    <fieldset>
+                        <legend>Activities</legend>
+                        <span id="span-add-strand-activities"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Locations</legend>
+                        <span id="span-add-strand-locations"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>People</legend>
+                        <span id="span-add-strand-people"></span>
+                    </fieldset>                    
+                    <span id="span-add-strand-notification"></span>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+
+
+        <div id="divHeader" class="center width1200">
+            <p class="center"> Life Map</p>
+            <span > &nbsp; User:  @name </span>
+            <span id="spanA">               
+                <a href="#" onClick="logout();">logout</a>
+            </span>
+        </div>
+
+        <div id="divContainer" class="center width1200">
+            <div id="divLeft">
+
+            </div>
+
+            <div id="divRight">
+
+                <div id="tabs">
+                    <ul>
+                        <li><a href="#tabs_activities">Activities</a></li>
+                        <li><a href="#tabs_strands">Strands</a></li>
+                        <li><a href="#tabs_diary">Diary</a></li>
+                        <li><a href="#tabs_settings">Settings</a></li>
+                    </ul>
+                    <div id="tabs_activities">
+                        <p>Date: 
+                            <input type="text" id="datePicker1" class="datePicker">
+                            <button id="btnShowActivities"> Show </button> 
+                        </p>
+
+
+
+                        <div id="divActivityTableButtons">
+                            <button id="btnSaveActivities"> Save</button> 
+                            <button id="btnAddActivity"> Add </button>
+                            <span id="activityTableNotification"></span><br/>
+                        </div>
+                        <div id="divActivityTable">
+
+                        </div>
+                    </div>
+
+                    <div id="tabs_strands">
+                        <p>
+                            <button id="btnNewStrand"> Add New Strand</button>
+                        </p>                       
+
+                        <div id="divStrandList">
+
+                        </div>
+                        <div id="divStrandDetails">
+
+                        </div> 
+                        <!--
+                           <div id="divEditStrand">
+                               Strand: <span id="spanStrandName"> </span>
+                               <div id="addStrandActivities"></div>
+                               <div id="addStrandLocations"></div>
+                               <div id="addStrandPeople"></div>
+                               <button id="btnAddStrand"> Edit </button>
+                           </div> 
+   
+                           
+   
+                           <div id="divAddStrand">
+                               Name: <input type="text" value="">
+                               <div id="addStrandActivities"></div>
+                               <div id="addStrandLocations"></div>
+                               <div id="addStrandPeople"></div>
+                               <button id="btnAddStrand"> Add </button>
+                           </div> 
+                        -->
+                    </div>
+
+
+                    <div id="tabs_diary">
+                        <p>Date: 
+                            <input type="text" id="datePicker2" class="datePicker">
+                            <button id="btnShowDiary"> Show</button> 
+                        </p>
+
+                        <img id='diaryLoaderImage' class='imgLoader' src='/assets/images/loader.gif'/>
+                        <div id="divDiaryEditor">
+                            <span id="Date"></span>
+                            <button id="btnSaveDiary"> Save</button>
+                            <button id="btnCancelDiary"> Cancel</button>
+                            <button id="btnDeleteDiary"> Delete</button>
+                            <span id="diaryNotification"></span><br/>
+                            <br/>
+                            <textarea id="diaryTextArea" rows="30" cols="100"></textarea>
+                        </div>
+                    </div>
+
+
+                    <div id="tabs_settings">
+                        <div id="divSettingsActivity" class="settingsDivClass"> 
+                            <br/><b>Activities: </b> <ul class="inlineClass" id="ulActivity"> </ul> 
+                            Add New Activity: <input type="text" id='newActivity' value=''/>
+                            <button id='btnAddNewActivity'> Add Activity</button> <span id="addActivityNotification"></span><br/>
+
+                        </div>
+
+                        <div id="divSettingsLocation" class="settingsDivClass"> 
+                            <br/><b>Locations: </b> <ul class="inlineClass" id="ulLocation"> </ul>
+                            Add New Location: <input type="text" id='newLocation' value=''/>
+                            <button id='btnAddNewLocation'> Add Location</button><span id="addLocationNotification"></span><br/>
+                        </div>
+
+                        <div id="divSettingsPeople" class="settingsDivClass"> 
+                            <br/><b>People: </b> <ul class="inlineClass" id="ulPeople"> </ul> 
+                            Add New People: <input type="text" id='newPeople' value=''/>
+                            <button id='btnAddNewPeople'> Add People</button><span id="addPeopleNotification"></span><br/>
+                        </div>                        
+                    </div>
+
+                </div>
+            </div>               
+
+        </div>
+
+        <div id="divFooter" class="center width1200">
+
+
+        </div>
+
+    </body>
+</html>
+

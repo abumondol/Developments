@@ -1,0 +1,288 @@
+@(name: String, id: String)
+
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>LifeMaps - Home</title>
+
+        <link rel="stylesheet" href="/assets/css/home.css"  media="screen" type="text/css" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+        <script>
+            var user_id = @id;
+        </script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+        <script src="/assets/js/home.js"></script>
+    </head>
+
+
+    <body>
+
+        <div id="dialog-form" title="Add Activity"> 
+            <form>
+                <fieldset>                    
+                    <label> Time </label>&nbsp;&nbsp; <select id="add-start-hour"></select> : <select id="add-start-min"> </select> &nbsp;&nbsp;to&nbsp;&nbsp;                   
+                    <select id="add-end-hour"></select> : <select id="add-end-min"> </select>              
+                    <br/><br/>
+                    <label>Type</label>&nbsp;&nbsp; <select id="add-activity-type"> </select>                  
+
+                    <br/>
+                    <fieldset>
+                        <legend>Activities</legend>
+                        <span id="add-activities"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Locations</legend>
+                        <span id="add-locations"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Done for</legend>
+                        <span id="add-done-for"></span>
+                    </fieldset> 
+                    <fieldset>
+                        <legend>Done with</legend>
+                        <span id="add-done-with"></span>
+                    </fieldset> 
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-form-edit" title="Edit Activity"> 
+            <form>
+                <fieldset>
+                    <label> Time </label>&nbsp;&nbsp; <select id="edit-start-hour"></select> : <select id="edit-start-min"> </select> &nbsp;&nbsp;to&nbsp;&nbsp;                   
+                    <select id="edit-end-hour"></select> : <select id="edit-end-min"> </select>              
+                    <br/><br/>
+                    <label>Type</label>&nbsp;&nbsp; <select id="edit-activity-type"> </select>
+
+                    <br/>
+                    <fieldset>
+                        <legend>Activities</legend>
+                        <span id="edit-activities"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Locations</legend>
+                        <span id="edit-locations"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Done for</legend>
+                        <span id="edit-done-for"></span>
+                    </fieldset> 
+                    <fieldset>
+                        <legend>Done with</legend>
+                        <span id="edit-done-with"></span>
+                    </fieldset> 
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-add-diary" title="Add to Diary"> 
+            <form>
+                <fieldset>
+                    <legend>Description </legend>
+                    <textarea id="add-diary-description"></textarea>                    
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-edit-diary" title="Edit"> 
+            <form>
+                <fieldset>
+                    <legend>Description</legend>
+                    <textarea id="edit-diary-description"></textarea>                    
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dialog-see" title="Emotion, Experience and Story">
+            <div id='see-left'>
+                <fieldset id="fieldset-emotion">
+                    <legend>Emotion</legend>
+                    <span id='span-drag'></span>
+                </fieldset>
+            </div>
+
+            <div id='see-right'>
+                <fieldset id="fieldset-experience">                    
+                    <legend>Experience</legend>
+                    <input type="radio" name="1" value="1">I had a new experience or did something new<br/>
+                    <input type="radio" name="2" value="2">I was cared for, protected, helped, or loved by another<br/>
+                    <input type="radio" name="3" value="3">I cared for, protected, helped, or loved another<br/>
+                    <input type="radio" name="4" value="4">I gained the respect or admiration of others<br/>
+                    <input type="radio" name="5" value="5">I behaved well<br/>
+                    <hr>
+                    <input type="radio" name="1" value="101">I resisted having new experience or doing something new<br/>
+                    <input type="radio" name="2" value="102">I was neglected, exposed, hurt, or rejected by another<br/>
+                    <input type="radio" name="3" value="103">I neglected, exposed, hurt, or rejected another<br/>
+                    <input type="radio" name="4" value="104">I lost the respect or admiration of others<br/>
+                    <input type="radio" name="5" value="105">I behaved badly<br/>
+                </fieldset>
+                <fieldset id="fieldset-story">
+                    <legend>Story</legend>
+                    <textarea id="see-story"></textarea>
+                </fieldset>
+            </div>
+        </div>
+
+        <div id="dialog-add-strand" title="Add New Strand">                           
+            <form>
+                <fieldset>
+                    <label for="start_time">Strand Name: </label>
+                    <input type="text" name="add-strand-name" id="add-strand-name" class="text ui-widget-content ui-corner-all">
+                    <fieldset>
+                        <legend>Activities</legend>
+                        <span id="add-strand-activities"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Locations</legend>
+                        <span id="add-strand-locations"></span>
+                    </fieldset>
+                    <fieldset>
+                        <legend>People</legend>
+                        <span id="add-strand-people"></span>
+                    </fieldset>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+
+
+        <div id="divHeader" class="center width1200">
+            <p class="center"> LifeMaps</p>
+            <span > &nbsp; User Code:  @name </span>
+            <span id="spanA">               
+                <a href="#" onClick="logout();">logout</a>
+            </span>
+        </div>
+
+        <div id="divContainer" class="center width1200">
+            <div id="divLeft">
+
+            </div>
+
+            <div id="divRight">
+
+                <div id="tabs">
+                    <ul>
+                        <li><a href="#tabs_activities">Activities</a></li>
+                        <li><a href="#tabs_strands">Strands</a></li>                       
+                        <li><a href="#tabs_settings">Settings</a></li>
+                    </ul>
+                    <div id="tabs_activities">
+                        <p>Date: 
+                            <input type="text" id="datePicker1" class="datePicker" readonly>
+                            <button id="btnShowDailyData"> Show </button>
+                            <span id="showNotification">Loading... Please Wait.</span>
+                        </p>
+
+
+                        <div id="divDailyData">
+
+                            <div id="divTableButtons">
+                                <button id="btnSaveDailyData"> Save</button> 
+                                <button id="btnAddActivity"> Add Activity</button>
+                                <button id="btnAddDiaryEntry"> Add To Diary</button>                                
+                            </div>
+                            <br/>
+                            <div id="divActivityTable"> </div>
+                            <br/>
+                            <div id="divDiaryTable"> </div>                            
+                        </div>
+                    </div>
+
+                    <div id="tabs_strands">
+                        <p>
+                            <button id="btnNewStrand"> Add New Strand</button>
+                        </p>                       
+
+                        <div id="divStrandList">
+
+                        </div>
+                        <div id="divStrandDetails">
+
+                        </div> 
+                        <!--
+                           <div id="divEditStrand">
+                               Strand: <span id="spanStrandName"> </span>
+                               <div id="addStrandActivities"></div>
+                               <div id="addStrandLocations"></div>
+                               <div id="addStrandPeople"></div>
+                               <button id="btnAddStrand"> Edit </button>
+                           </div> 
+   
+                           
+   
+                           <div id="divAddStrand">
+                               Name: <input type="text" value="">
+                               <div id="addStrandActivities"></div>
+                               <div id="addStrandLocations"></div>
+                               <div id="addStrandPeople"></div>
+                               <button id="btnAddStrand"> Add </button>
+                           </div> 
+                        -->
+                    </div>
+
+                    <div id="tabs_settings">
+                        <div id="divSettingsActivity" class="settingsDivClass">
+                            <fieldset>
+                                <legend> Activities</legend>
+                                <ul class="inlineList" id="ulActivity"> </ul> 
+                                <br/>Add New Activity: <input type="text" id='newActivity' value=''/>
+                                <button id='btnAddNewActivity' class='btnAddNew' > Add Activity</button> 
+                                <span id="addActivityNotification" class="addNewNotification"></span>
+                            </fieldset>
+                        </div>
+
+                        <div id="divSettingsLocation" class="settingsDivClass"> 
+                            <fieldset>
+                                <legend> Locations</legend>
+                                <ul class="inlineList" id="ulLocation"> </ul> 
+                                <br/>Add New Location: <input type="text" id='newLocation' value=''/>
+                                <button id='btnAddNewLocation' class='btnAddNew'> Add Location</button>
+                                <span id="addLocationNotification" class="addNewNotification"></span>
+                            </fieldset>                            
+                        </div>
+
+                        <div id="divSettingsPeople" class="settingsDivClass"> 
+                            <fieldset>
+                                <legend> People</legend>
+                                <ul class="inlineList" id="ulPeople"> </ul> 
+                                <br/>Add New People: <input type="text" id='newPeople' value=''/>
+                                <button id='btnAddNewPeople' class='btnAddNew'> Add People</button> 
+                                <span id="addPeopleNotification" class="addNewNotification"></span>                          
+                            </fieldset>
+                        </div>                        
+                    </div>
+
+                </div>
+            </div>               
+
+        </div>
+
+        <div id="divFooter" class="center width1200">
+
+
+        </div>
+
+    </body>
+</html>
+

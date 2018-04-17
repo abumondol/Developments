@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta charset="UTF-8">
+
+        <title>LifeMaps - Login</title>
+
+        <link rel="stylesheet" href="/assets/css/login.css"  media="screen" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <script src="/assets/js/login.js"></script>       
+
+    </head>
+
+
+    <body>
+
+        <div  id="header">
+            <h1 id="headerText" class="center"> LifeMaps</h1>
+        </div>
+
+        <div id="form" class="center">
+            <h3 class="center">Login</h3>
+			<span id="notification" class="center"></span>
+            <form onSubmit="loginCheck();
+                    return false;">
+                <input type="text" id="user_code" class="center input_box" required value="User code" onBlur="if (this.value == '')
+                        this.value = 'User code'" onFocus="if (this.value == 'User code')
+                        this.value = ''"/>
+                <input type="password" id="password" class="center input_box" required value="Password" onBlur="if (this.value == '')
+                        this.value = 'Password'" onFocus="if (this.value == 'Password')
+                        this.value = ''"/>
+                <input type="submit" value="login" class="submit" />
+            </form>
+                        <!--
+			<a href="#" id="forgot">Forgot Password</a>
+                        -->
+			
+        </div>
+        
+
+    </body>
+</html>
+
