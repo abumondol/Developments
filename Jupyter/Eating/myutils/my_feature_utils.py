@@ -77,6 +77,22 @@ def get_energy(d, step_size):
     return res
                 
 
+def get_variance_for_session(d, win_size, step_size):
+    dcount = len(d)
+    indices = list(range(0, dcount-win_size, step_size))
+    res = np.zeros((len(indices), 2))    
+    for i in range(len(indices)):
+        ix = indices[i]        
+        res[i, 0] = ix
         
+        seg = d[ix:ix+win_size, 4:7]        
+        res[i, 1] = np.sum(np.var(seg, axis=1))
+        
+        #seg = d[ix:ix+step_size, 7:10]        
+        #res[i, 2] = np.sum(seg*seg)
+    
+    return res
+    
+    
         
 

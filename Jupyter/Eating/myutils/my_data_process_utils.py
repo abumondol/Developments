@@ -7,7 +7,7 @@
 import numpy as np
 
 
-# In[3]:
+# In[2]:
 
 
 def resample(data, rate, start_end_times = []):
@@ -42,7 +42,7 @@ def resample(data, rate, start_end_times = []):
     return res
 
 
-# In[4]:
+# In[3]:
 
 
 def time_to_index(data, ts):
@@ -77,7 +77,7 @@ def time_to_index(data, ts):
     
 
 
-# In[1]:
+# In[4]:
 
 
 def quat2mat(q):
@@ -107,7 +107,7 @@ def quat2mat(q):
     return Rx, Ry, Rz
 
 
-# In[1]:
+# In[5]:
 
 
 def normalize_by_magnitude(d):
@@ -116,7 +116,7 @@ def normalize_by_magnitude(d):
     return d
 
 
-# In[1]:
+# In[6]:
 
 
 def get_spatio_temporal_series(d, radius):
@@ -139,7 +139,7 @@ def get_spatio_temporal_series(d, radius):
     return np.array(res).astype(int)
 
 
-# In[2]:
+# In[7]:
 
 
 def smooth_data(data, factor):
@@ -150,7 +150,7 @@ def smooth_data(data, factor):
     return data
 
 
-# In[2]:
+# In[8]:
 
 
 def simple_moving_average(d, window_size):
@@ -165,4 +165,27 @@ def simple_moving_average(d, window_size):
         
     
         
+
+
+# In[9]:
+
+
+def add_subj_sess_to_array(d, subj, sess, at_begin=True, to_int=False):    
+    ss = np.zeros((len(d), 2))
+    ss[:, 0] = subj
+    ss[:, 1] = sess
+    
+    if at_begin:
+        res = np.concatenate((ss, d), axis=1)
+    else:
+        res = np.concatenate((d, ss), axis=1)
+        
+    if to_int:
+        res = res.astype(int)
+        
+    return res
+    
+    
+    
+    
 

@@ -11,31 +11,27 @@ import sys
 import importlib
 
 
-# In[2]:
+# In[4]:
 
 
 util_path = 'C:/ASM/Dropbox/Developments/Jupyter/Eating/myutils' if 'C:' in os.getcwd() else './myutils'
 sys.path.append(util_path)
 import my_file_utils as mfileu
 import my_steven_free_utils as msfreeu
-import meal_detection_utils as mdu
-importlib.reload(mdu)
+import Meal_Detection_Utils as mdu
+import my_feature_utils as mfeatu
+importlib.reload(mfeatu)
 
 
-# In[3]:
+# In[5]:
 
 
 hand='right'
-
-if hand == 'right':
-    ds = mfileu.read_file('data', 'free_data_steven_right_smoothed.pkl')
-else:
-    ds = mfileu.read_file('data', 'free_data_steven_left_smoothed.pkl')
-
+ds = mfileu.read_file('data', 'free_data_steven_'+hand+'_smoothed.pkl')
 annots = mfileu.read_file('data', 'free_data_steven_annots.pkl')
 
 
-# In[10]:
+# In[16]:
 
 
 import matplotlib.pyplot as plt
@@ -44,33 +40,37 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 idf = 16*60*60 #index division factor
 win_size = 5*16
 for subj in range(11):
-    res = mfileu.read_file('results_meal_winsize_160_vth_1_50_xth_0_free','subj_'+str(subj)+"_"+hand+".pkl") 
-    #if hand=='right':
-    #    res_bite = mfileu.read_file('results_bite_detection_free','subj_'+str(subj)+"_"+hand+".pkl")
-        
-    for sess in range(len(res)):
-        if subj!=0 and sess!=0: 
-            continue
+    #if subj != 1:
+    #    continue
+    
+    res = mfileu.read_file('results_free/win_10_vth_1_30_xth_0','subj_'+str(subj)+"_"+hand+".pkl") 
+    
+    pred_subj = res["pred"]
+    indices_subj = res["indices"]
+    v_subj = res["var"]
+    gx_subj= res["gx"]  
+    
+    for sess in range(len(ds[subj])):        
             
         print('Subj, sess: ', subj, sess)
         a = np.copy(annots[subj][sess])
         dcount = len(ds[subj][sess])
         a = msfreeu.process_anntos(dcount, a)
         
-        pred = res[sess]["pred"]
-        indices = res[sess]["indices"]
-        v = res[sess]["var"]
-        gx= res[sess]["gx"]        
+        cond = (indices_subj[:,1]==sess)
+        pred = pred_subj[cond, :]
+        cix = indices_subj[cond, 4]
+        v = v_subj[cond]
+        gx = gx_subj[cond]
         
-        #energy = mfeatu.get_energy(ds[subj][sess], 16)        
         pred = mdu.filter_by_var_gx(pred, var=v, gx=gx, hand=hand)        
-        indices = indices[:, 2] + win_size//2
         
-        c = mdu.find_clusters_free(indices, pred)
+        
+        c = mdu.find_clusters_free(cix, pred)
         print(c)
         c = c[c[:, 2]>=3, :]
         
-        p = mdu.smooth_free(indices, pred)
+        p = mdu.smooth_free(cix, pred)
         p = p[p[:, 1]>=0.5, :]
         p[:, 1] = 2
         
@@ -79,7 +79,7 @@ for subj in range(11):
         fig = plt.figure(figsize=(20,8))
         ax = plt.subplot(111)
         
-        ax.scatter(indices/idf, pred[:, 0], marker='.', s=1, color='blue')                
+        ax.scatter(cix/idf, pred[:, 0], marker='.', s=1, color='blue')                
         ax.scatter(p[:,0]/idf, p[:, 1], marker='o', s=10, color='green')                
         
         '''
@@ -97,9 +97,8 @@ for subj in range(11):
         for i in range(len(a)):
             si = a[i, 0]/idf
             ei = a[i, 1]/idf
-            mt = a[i, 2]
-            if mt==1:
-                ax.plot([si, ei], [1.5, 1.5], color=clrs[mt], linewidth=5)
+            mt = a[i, 2]            
+            ax.plot([si, ei], [1.5, 1.5], color=clrs[mt], linewidth=5)
                 
         for i in range(len(c)):
             si = c[i, 0]/idf
@@ -129,15 +128,63 @@ for subj in range(11):
         plt.grid(True)
         plt.show()
         
-        '''        
+        
+        ################################
         fig = plt.figure(figsize=(20,8))
-        ax = plt.subplot(111)          
-        ax.plot(energy[:, 0]//16, energy[:, 1] )
-        plt.title("Energy Gyro: "+str(subj)+","+str(sess))
-        plt.ylim([0, 100])
+        ax = plt.subplot(111)                  
+        clrs = ['', 'blue', 'green', 'red', 'black']
+        for i in range(len(a)):
+            si = a[i, 0]/idf
+            ei = a[i, 1]/idf
+            mt = a[i, 2]
+            #if mt==1:
+            ax.plot([si, ei], [60, 60], color=clrs[mt], linewidth=5)
+        
+        v = mfeatu.get_variance_for_session(ds[subj][sess], 80, 40)        
+        ax.plot(v[:, 0]/idf, v[:, 1] )
+        #plt.title("Accelration  Gyro: "+str(subj)+","+str(sess))
+        #plt.ylim([0, 100])
+        
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontsize(16)
+        
+        for tick in ax.yaxis.get_major_ticks():
+            tick.label.set_fontsize(16)
+            
+        plt.xlabel('Time (Hour)', fontsize=20)
+        plt.ylabel('Total variance in Accelration', fontsize=20)
+        
         plt.grid(True)
         plt.show()
         
+        ################################
+        fig = plt.figure(figsize=(20,8))
+        ax = plt.subplot(111)                  
+        clrs = ['', 'blue', 'green', 'red', 'black']
+        for i in range(len(a)):
+            si = a[i, 0]/idf
+            ei = a[i, 1]/idf
+            mt = a[i, 2]
+            if mt==1:
+                ax.plot([si, ei], [1.2, 1.2], color=clrs[mt], linewidth=5)
+        
+        t = ds[subj][sess][:, 0]/(60*60)
+        gx = ds[subj][sess][:, -3]
+        ax.plot(t, gx)        
+        
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontsize(16)
+        
+        for tick in ax.yaxis.get_major_ticks():
+            tick.label.set_fontsize(16)
+            
+        plt.xlabel('Time (Hour)', fontsize=20)
+        plt.ylabel('Gravitaty along $X$ axis', fontsize=20)
+        
+        plt.grid(True)
+        plt.show()
+        
+        '''
         fig = plt.figure(figsize=(20,8))
         ax = plt.subplot(111)          
         ax.plot(energy[:, 0]//16, energy[:, 2] )        

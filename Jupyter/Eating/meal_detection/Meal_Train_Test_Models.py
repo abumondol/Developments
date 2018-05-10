@@ -26,56 +26,53 @@ import my_tensorflow_cnn_utils as mcnnu
 import my_tensorflow_lstm_utils as mlstmu
 import my_tensorflow_dense_utils as mdenseu
 import my_feature_utils as mfeatu
-
 importlib.reload(mwgenu)
-#importlib.reload(mfeatu)
-#importlib.reload(mcnnu)
-#importlib.reload(mlstmu)
-#importlib.reload(mdenseu)
-#importlib.reload(mclfu)
 
 
 # In[3]:
 
 
-win_size, neg_step, pos_step, test_step  = 10*16, 8, 8, 8
-vth_min, vth_max, xth = 1, 50, 0
-axis_count = 9
-label_shape_1 = 1
-folder_suffix = "_meal_free_winsize_"+str(win_size)+"_vth_"+str(vth_min)+"_"+str(vth_max)+"_xth_"+str(xth)
+step_size = 8
+vth_min, vth_max, xth = 1, 30, 0
+axis_count, label_shape_1 = 9, 1 
 
 
-# In[40]:
+# In[4]:
 
 
-hand='left'
+hand='right'
 ds = mfileu.read_file('data', 'free_data_steven_'+hand+'_smoothed.pkl')
 annots = mfileu.read_file('data', 'free_data_steven_annots.pkl')
 
 
-# In[45]:
+# In[10]:
 
 
-subj, num_epochs = 1, 1
-train = 0
+subj, num_epochs, win_duration, train_code = 1, 1, 10, 4
 if 'C:' not in mfileu.get_path():    
-    subj, num_epochs = int(sys.argv[1]), int(sys.argv[2])
+    subj, num_epochs, win_duration, train_code = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
 
-params={}
-params['learning_rate'] = 0.001
-params['num_epochs'] = num_epochs
-params['batch_size'] = 128
-params['keep_prob_val'] = 0.5
+print("\n============ Subject:{}, Epochs:{}, Win Duration:{}, Train_code:{} =============".format(subj, num_epochs, win_duration, train_code))
+
+assert train_code in [1, 2, 3, 4]
+assert 0<=subj<=11
+assert 0<num_epochs<=100
+assert win_duration>0
+    
+win_size = win_duration*16
+folder_suffix = "win_"+str(win_duration)+"_vth_"+str(vth_min)+"_"+str(vth_max)+"_xth_"+str(xth)
+print(folder_suffix)
+    
+learning_rate = 0.001
+num_epochs = num_epochs
+batch_size = 128
+keep_prob_val = 0.5
 
 
-# In[42]:
+# In[6]:
 
 
-def train_test_model(train_indices, test_indices, params, model_path=None):
-    learning_rate = params['learning_rate']
-    num_epochs = params['num_epochs']
-    batch_size = params['batch_size']
-    keep_prob_val = params['keep_prob_val']
+def train_test_model(train_indices, test_indices, model_path_src=None, model_path_dest=None):   
     
     train_result, test_result = [], []
     tf.reset_default_graph()
@@ -106,9 +103,20 @@ def train_test_model(train_indices, test_indices, params, model_path=None):
 
     sess = tf.Session()
     
+    #load model for test or retrain
+    if train_code >=2:
+        saver = tf.train.Saver()
+        saver.restore(sess, model_path_src+'/model')
+        print("************************ Model Loaded! ************************")            
+    
     ########## Train and then save the model ########################
-    if len(train_indices)>0:    
-        sess.run(tf.global_variables_initializer())    
+    if train_code<=2:   # train of retrain        
+        if train_code==1:
+            print("============== Training =====================")
+            sess.run(tf.global_variables_initializer())
+        else:
+            print("============== Re-Training =====================")
+            
         train_indices, _ = mclfu.adjust_for_batch_size(train_indices, train_indices, batch_size)
 
         train_count = len(train_indices)
@@ -142,19 +150,16 @@ def train_test_model(train_indices, test_indices, params, model_path=None):
 
         print('!!!!!!!!!!!!!!! Optimization Finished !!!!!!!!!!!!!!!!!')
 
-        if model_path:
-            saver = tf.train.Saver()            
-            mfileu.create_directory(model_path)
-            saver.save(sess, model_path+'/model')    
-            print("Model Saved!")
+        
+        saver = tf.train.Saver()        
+        mfileu.create_directory(model_path_dest)
+        saver.save(sess, model_path_dest+'/model')    
+        print("Model Saved!")
+        
         sess.close()
         
     ########## Restore the model and then Test  ########################
-    else:
-        saver = tf.train.Saver()
-        saver.restore(sess, model_path+'/model')
-        print("Model Loaded!")
-        
+    else: #test
         test_count_original = len(test_indices)        
         test_indices, _ = mclfu.adjust_for_batch_size(test_indices, test_indices, batch_size)
         test_count = len(test_indices)
@@ -172,81 +177,101 @@ def train_test_model(train_indices, test_indices, params, model_path=None):
         
 
 
-# In[46]:
+# In[11]:
 
 
-print("\n============ Subject, Epochs, Hand, Win Size: {}, {}, {}, {} =============".format(subj, num_epochs, hand, win_size))
+path = mfileu.get_path()
 
-if train:
+if train_code==1:
     print("Training.....")
-    indices = mwgenu.get_train_window_indices_all(ds, annots, win_size=win_size, neg_step=neg_step, pos_step=pos_step, exclude_subject=subj)    
+    indices = mwgenu.get_window_indices_all(ds, annots, win_size=win_size, step_size=step_size, subject=subj, exclude=True)    
     indices = indices[(indices[:, -1]<=1), :]
     assert np.sum(indices[:, -1]>1) == 0
     print("Indices shape before filter, pos_count: ", indices.shape, np.sum(indices[:, -1]))
     
     v = mfeatu.get_variance_accel(ds, indices, win_size=win_size)
-    gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)
-    if hand=='right':
-        indices = indices[(v>=vth_min)&(v<=vth_max)&(gx<=xth), :]
-    else:
-        indices = indices[(v>=vth_min)&(v<=vth_max)&(gx>=xth), :]
+    gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)    
+    indices = indices[(v>=vth_min)&(v<=vth_max)&(gx<=xth), :]
+    
     print("Indices shape after filter, pos_count ", indices.shape, np.sum(indices[:, -1]))
     
     indices = shuffle(indices)
     train_indices, val_indices = train_test_split(indices, test_size=0.1, stratify=indices[:, -1])
     print("train, val shapes: ", train_indices.shape, val_indices.shape, np.sum(train_indices[:, -1]), np.sum(val_indices[:, -1]))
     
-    path = mfileu.get_path()
-    train_test_model(train_indices, val_indices, params, path+"/models"+ folder_suffix+"/subj_"+str(subj)+"_"+hand)
+    model_path_dest = path+"/models_free/"+ folder_suffix+"/subj_"+str(subj)+"_"+hand
+    train_test_model(train_indices, val_indices, model_path_dest = model_path_dest)
+
     
+elif train_code==2:
+    print("Re-Training.....")
+    indices = mwgenu.get_window_indices_all(ds, annots, win_size=win_size, step_size=step_size, subject=subj, exclude=False)    
+    indices = indices[(indices[:, -1]<=1), :]
+    assert np.sum(indices[:, -1]>1) == 0
+    print("Indices shape before filter, pos_count: ", indices.shape, np.sum(indices[:, -1]))
+    
+    v = mfeatu.get_variance_accel(ds, indices, win_size=win_size)
+    gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)    
+    indices = indices[(v>=vth_min)&(v<=vth_max)&(gx<=xth), :]
+    
+    ("Indices shape after filter, pos_count ", indices.shape, np.sum(indices[:, -1]))
+    
+    
+    for sess in range(len(ds[subj])):
+        print("========= Retraing Subject, Session: {}, {} ==========".format(subj, sess))
+        sess_indices = indices[indices[:, 1]!=sess, :]
+        sess_indices = shuffle(sess_indices)
+        train_indices, val_indices = train_test_split(sess_indices, test_size=0.1, stratify=sess_indices[:, -1])
+        print("train, val shapes: ", train_indices.shape, val_indices.shape, np.sum(train_indices[:, -1]), np.sum(val_indices[:, -1]))
+        
+        model_path_src = path+"/models_free/"+ folder_suffix+"/subj_"+str(subj)+"_"+hand
+        model_path_dest = path+"/models_free_personal/"+ folder_suffix+"/subj_"+str(subj)+"_sess_"+str(sess)+"_"+hand
+        train_test_model(train_indices, val_indices, model_path_src=model_path_src, model_path_dest=model_path_dest)
+    
+    
+elif train_code==3:
+    print("Testing Lopo.....")    
+    for subj in range(11):        
+        print("---------------- Testing Free LOPO-----------------------------")
+
+        indices = mwgenu.get_window_indices_all(ds, annots, win_size=win_size, step_size=step_size, subject=subj, exclude=False)
+        print("Free Subj, indices shape: ", subj, indices.shape)
+
+        v = mfeatu.get_variance_accel(ds, indices, win_size=win_size)
+        gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)
+
+        model_path_src = path+"/models_free/"+ folder_suffix+"/subj_"+str(subj)+"_"+hand
+        pred = train_test_model([], indices, model_path_src=model_path_src)
+        print("Prediction shape: ", pred.shape)        
+
+        res = {"pred":pred, 'indices':indices, "var":v, "gx":gx}
+        print ("Test done for subject :", subj)        
+        print("\n----------------------------------\n")        
+        
+        mfileu.write_file('/results_free/'+ folder_suffix, 'subj_'+str(subj)+"_"+hand+".pkl", res)
+        
 else:
-    print("Testing.....")
-    path = mfileu.get_path()
+    print("Testing Loso.....")    
+    for subj in range(1,2):        
+        print("---------------- Testing Free LOSO-----------------------------")
+        indices = mwgenu.get_window_indices_all(ds, annots, win_size=win_size, step_size=step_size, subject=subj, exclude=False)
+        print("Free Subj, indices shape: ", subj, indices.shape)
+
+        for sess in range(len(ds[subj])):
+            sess_indices = indices[indices[:, 1]==sess, :]
+
+            v = mfeatu.get_variance_accel(ds, sess_indices, win_size=win_size)
+            gx = mfeatu.get_grav_x(ds, sess_indices, index_offset=win_size//2)
+
+            model_path_src = path+"/models_free_personal/"+ folder_suffix+"/subj_"+str(subj)+"_sess_"+str(sess)+"_"+hand
+            pred = train_test_model([], sess_indices, model_path_src = model_path_src)
+            print("Prediction shape: ", pred.shape)        
+
+            res = {"pred":pred, 'indices':indices, "var":v, "gx":gx}
+            print ("Re-Test done for subject :", subj)        
+            print("\n----------------------------------\n")
+
+            mfileu.write_file('/results_free_personal/'+ folder_suffix+"_free", 'subj_'+str(subj)+"_sess_"+str(sess)+"_"+hand+".pkl", res)
+
     
-    #Test on Free Data
-    for subj in range(11):
-        res=[]
-        print("---------------- Testing Free -----------------------------")
-        for sess in range(len(ds[subj])):
-            indices = mwgenu.get_test_window_indices(ds, annots, win_size, step_size=test_step, subj=subj, sess=sess)        
-            print("Free Subj, sess, indices shape: ", subj, sess, indices.shape)
-            
-            v = mfeatu.get_variance_accel(ds, indices, win_size=win_size)
-            gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)
-            
-            pred = train_test_model([], indices, params, path+"/models"+ folder_suffix+"/subj_"+str(subj)+"_"+hand)
-            print("Prediction shape: ", pred.shape)        
-
-            res.append({"pred":pred, 'indices':indices, "var":v, "gx":gx})
-            print ("Test done for subject, session :", subj, sess)
-            #gt = indices[:, -1].reshape((-1, 1))
-            #print(mclfu.get_scores_1d(pred, gt))
-            print("\n----------------------------------\n")
-
-        mfileu.write_file('results'+ folder_suffix+"_free", 'subj_'+str(subj)+"_"+hand+".pkl", res)
-        
-        
-    #Test on Lab Data
-    ds = mfileu.read_file('data', 'lab_data_steven_smoothed.pkl')
-    ds_right, ds_left, annots = mslabu.separate_right_left_annots(dsa)    
-    ds = ds_right if hand=='right' else ds_left
-    for subj in range(7):
-        res=[]
-        print("----------------- Testing Lab ----------------------------")
-        for sess in range(len(ds[subj])):
-            indices = mwgenu.get_test_window_indices(ds, [], win_size, step_size=test_step, subj=subj, sess=sess)        
-            print("Lab subj, sess, indices shape: ", subj, sess, indices.shape)
-            
-            v = mfeatu.get_variance_accel(ds, indices, win_size=win_size)
-            gx = mfeatu.get_grav_x(ds, indices, index_offset=win_size//2)
-            
-            model_subject = subj-2 if subj>=2 else 10 
-            pred = train_test_model([], indices, params, path+"/models"+ folder_suffix+"/subj_"+str(model_subject)+"_"+hand)
-            print("Prediction shape: ", pred.shape)        
-
-            res.append({"pred":pred, 'indices':indices, "var":v, "gx":gx})
-            print ("Test done for subject, session :", subj, sess)            
-            print("\n----------------------------------\n")
-
-        mfileu.write_file('results'+ folder_suffix+"_lab", 'subj_'+str(subj)+"_"+hand+".pkl", res)
 

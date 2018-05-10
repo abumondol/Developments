@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[6]:
 
 
 import numpy as np
@@ -9,7 +9,7 @@ import os
 import sys
 
 
-# In[2]:
+# In[7]:
 
 
 util_path = 'C:/ASM/Dropbox/Developments/Jupyter/Eating/myutils' if 'C:' in os.getcwd() else './myutils'
@@ -17,19 +17,66 @@ sys.path.append(util_path)
 import my_file_utils as mfileu
 import my_steven_free_utils as msfreeu
 import my_feature_utils as mfeatu
+import my_data_process_utils as mdpu
 
 
-# In[2]:
+# In[30]:
 
 
-def get_indices(si, ei, step_size):    
-    return np.array(list(range(si, ei, step_size))).astype(int)   
+def get_window_indices(dcount, a, win_size, step_size):    
+    six = np.array(list(range(0, dcount-win_size, step_size))).astype(int)
+    assert six[-1]+win_size<=dcount
+    cix = six + win_size//2 
+    eix = six + win_size-1
+    
+    count = len(six)
+    labels = np.zeros((count, ))
+    episode_duration = np.zeros((count, ))
+    onborder = np.zeros((count, ))
+    
+    if len(a)>0:        
+        a = msfreeu.process_anntos(dcount, a)
+        acount = len(a)
+        print("Meal count: {}, Times data, last meal end: {}, {}".format(acount, dcount//16, a[-1,1]//16))    
+        assert a[-1, 1]<=dcount-1        
+        print(a)
+
+        for i in range(acount):
+            si, ei, mt = a[i, 0], a[i, 1], a[i, 2]        
+            print('  Meal {}: {} - {}, {}'.format(i+1, si//16, ei//16, mt))
+
+            cond = (cix>=si) & (cix<=ei)
+            labels[cond] = mt
+
+            cond1 =  ( (six<si) | (eix>ei) )
+            onborder[cond & cond1] = -1
+
+            cond1 = (cix<si) | (cix>ei)
+            cond2 = (six>=si) & (six<=ei)
+            cond3 = (eix>=si) & (eix<=ei)
+            onborder[cond1 & (cond2 | cond3)] = -2
+            
+            episode_duration[:] = ei-si+1
+        
+    
+    res = np.zeros((count, 6))
+    res[:, 0] = six
+    res[:, 1] = eix
+    res[:, 2] = cix    
+    res[:, 3] = episode_duration
+    res[:, 4] = onborder
+    res[:, 5] = labels
+    
+    print("total, onborders:", count, np.sum(onborder>=0))
+    
+    return res.astype(int)    
 
 
-# In[3]:
+# In[31]:
 
 
-def get_window_indices(dcount, a, neg_step, pos_step):    
+#This function generates window indices for positive and negative segments separately
+def get_window_indices_neg_pos(dcount, a, neg_step, pos_step):    
     a = msfreeu.process_anntos(dcount, a)            
     acount = len(a)
     print("Meal count: {}, Times data, last meal end: {}, {}".format(acount, dcount//16, a[-1,1]//16))    
@@ -74,18 +121,18 @@ def get_window_indices(dcount, a, neg_step, pos_step):
    
 
 
-# In[8]:
+# In[32]:
 
 
-def get_train_window_indices_all(ds, annots, win_size, neg_step, pos_step, exclude_subject=-1, blockPrint=True):    
+def get_window_indices_all(ds, annots, win_size, step_size, subject=-1, exclude=True, blockPrint=True):    
     if blockPrint:
         old_stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')
     
-    print("Generating train window indices...")
-    windows = np.empty((0, 5))
+    print("Generating window indices...")
+    indices = []
     for subj in range(len(ds)):
-        if subj==exclude_subject:
+        if (exclude and subj==subject) or ((not exclude) and subj != subject):
             continue
             
         for sess in range(len(ds[subj])):
@@ -93,13 +140,11 @@ def get_train_window_indices_all(ds, annots, win_size, neg_step, pos_step, exclu
             dcount = len(ds[subj][sess]) 
             a = annots[subj][sess]
             
-            indices = get_window_indices(dcount-win_size, a, neg_step=neg_step, pos_step=pos_step)            
-            w = np.zeros((len(indices), 5), dtype=np.int32)
-            w[:, 0] = subj
-            w[:, 1] = sess
-            w[:, 2:] = indices
-            windows = np.concatenate((windows, w), axis=0)                    
-            print("Session Shapes window, labels: ", w.shape, np.sum(w[:,4]==0), np.sum(w[:,4]==1), np.sum(w[:,4]==2), np.sum(w[:,4]==3))
+            ix = get_window_indices(dcount, a, win_size=win_size, step_size=step_size)            
+            ix = mdpu.add_subj_sess_to_array(ix, subj, sess, at_begin=True, to_int=True)
+            
+            indices = ix if len(indices) == 0 else np.concatenate((indices, ix), axis=0)
+            print("Session Shapes window, labels: ", ix.shape, np.sum(ix[:,-1]==0), np.sum(ix[:,-1]==1), np.sum(ix[:,-1]==2), np.sum(ix[:,-1]==3))
             print("---------------------------------------------")
         
     if blockPrint:
@@ -107,58 +152,36 @@ def get_train_window_indices_all(ds, annots, win_size, neg_step, pos_step, exclu
         #sys.stdout = sys.__stdout__
         sys.stdout = old_stdout
         
-    return windows.astype(int)
+    return indices.astype(int)
 
 
-# In[10]:
+# In[33]:
 
 
-def get_test_window_indices(ds, annots, win_size, step_size, subj, sess, blockPrint=True):    
-    if blockPrint:
-        old_stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
-    
-    print("Generating test window indices... subj, sess: ", subj, sess)    
-    
-    
-    dcount = len(ds[subj][sess])    
-    a = annots[subj][sess] if len(annots)>0 else []
-        
-    
-    indices = get_indices(0, dcount-win_size, step_size)    
-    w = np.zeros((len(indices), 5), dtype=np.int32)    
-    w[:, 0] = subj
-    w[:, 1] = sess
-    w[:, 2] = indices
-    
-    ix = indices + win_size//2
-    for i in range(len(a)):
-        cond = (ix>=a[i,0]) & (ix<=a[i,1])
-        w[cond, -1] = a[i,2]        
-        
-    if blockPrint:
-        sys.stdout.close()        
-        sys.stdout = old_stdout
-        
-    return w.astype(int)
+def get_window_data(ds, indices, win_size):   
+    count = len(indices)    
+    w = np.zeros((count, win_size, 9))
+    for i in range(count):
+        subj, sess, si = indices[i, 0], indices[i, 1], indices[i, 2]        
+        w[i, :, :] = ds[subj][sess][si:si+win_size, 4:]        
+    return w
+
+
+# In[34]:
+
+
+def get_window_data_accel(ds, indices, win_size):   
+    count = len(indices)    
+    w = np.zeros((count, win_size, 3))
+    for i in range(count):
+        subj, sess, si = indices[i, 0], indices[i, 1], indices[i, 2]
+        w[i, :, :] = ds[subj][sess][si:si+win_size, 1:4]        
+    return w
 
 
 # hand = 'right'
 # ds = mfileu.read_file('data', 'free_data_steven_'+hand+'.pkl')
 # annots = mfileu.read_file('data', 'free_data_steven_annots.pkl')
 
-# win_size, neg_step, pos_step = 5*16, 16, 8
-# w = get_train_window_indices(ds, annots, win_size=win_size, neg_step=neg_step, pos_step=pos_step, blockPrint=True)
-# print("All Shapes window, labels: ", w.shape, np.sum(w[:,4]==0), np.sum(w[:,4]==1), np.sum(w[:,4]==2), np.sum(w[:,4]==3))
-
-# In[5]:
-
-
-def get_window_data(ds, indices, win_size):   
-    count = len(indices)
-    w = np.zeros((count, win_size, 9))
-    for i in range(count):
-        subj, sess, ix = indices[i, 0], indices[i, 1], indices[i, 2]
-        w[i, :, :] = ds[subj][sess][ix:ix+win_size, 4:]        
-    return w
-
+# w = get_window_indices_all(ds, annots, win_size=10*16, step_size=8, blockPrint=False)
+# print("All Shapes window, labels: ", w.shape, np.sum(w[:,-1]==0), np.sum(w[:,-1]==1), np.sum(w[:,-1]==2), np.sum(w[:,-1]==3))
