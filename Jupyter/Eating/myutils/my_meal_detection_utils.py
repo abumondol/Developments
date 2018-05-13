@@ -156,7 +156,7 @@ def get_meal_detection_results(gt, clusters):
     
     for i in range(len(gt)):
         sig, eig = gt[i, 0], gt[i, 1]
-        for j in range(len(cl)):
+        for j in range(len(clusters)):
             sic, eic = clusters[j, 0], clusters[j, 1]
             
             if eig<sic:
@@ -172,7 +172,7 @@ def get_meal_detection_results(gt, clusters):
             acov[i, 2] = eic - eig #end error            
             
             if acov[i, 0]>1:
-                acov[i, 3] += sic - cl[j-1, 1] #gap error
+                acov[i, 3] += sic - clusters[j-1, 1] #gap error
             
             #acov[i, 4] = acov[i, 4] + (eic - sic+1) #cover_duration
             #acov[i, 5] = eig - sig+1 #gt_duration
@@ -193,6 +193,49 @@ def get_meal_detection_results(gt, clusters):
             clcov[j, mt-1] = 1
             
         
-    return acov, clcov
+    return gt, np.array(acov), np.array(clcov)
         
+
+
+# In[1]:
+
+
+def get_metric_results(gts, acovs, clcovs):
+    cond = (gts[:, 2]<=2)
+    gts = gts[cond]
+    acovs = acovs[cond]
+
+    res ={}
+
+    res['total'] = acovs.shape[0]
+    res['total_meal'] = np.sum(gts[:,2]==1)
+    res['total_snack'] = np.sum(gts[:,2]==2)
+    
+    #print(res['total'], res['total_meal'], res['total_snack'])
+    
+    res['tp'] = np.sum( (acovs[:, 0]>=1) )
+    res['tp_meal'] = np.sum( (acovs[:, 0]>=1) & (gts[:,2]==1) )
+    res['tp_snack'] = np.sum( (acovs[:, 0]>=1) & (gts[:,2]==2) )
+    
+    res['recall'] = res['tp']/res['total']
+    res['recall_meal'] = res['tp_meal']/res['total_meal']
+    res['recall_snack'] = res['tp_snack']/res['total_snack']
+    
+    res['fp'] = np.sum((clcovs[:, 0]==0) & (clcovs[:, 1]==0))
+    res['precision'] = res['tp']/(res['tp'] + res['fp'])
+    res['f1'] = 2*res['precision']*res['recall']/(res['precision']+res['recall'])
+    
+    res['start_error'] = np.sum(np.abs(acovs[:, 1]))/res['total']/16
+    res['start_error_meal'] = np.sum(np.abs(acovs[gts[:,2]==1, 1]))/res['total_meal']/16
+    res['start_error_snack'] = np.sum(np.abs(acovs[gts[:,2]==2, 1]))/res['total_snack']/16
+    
+    res['end_error'] = np.sum(np.abs(acovs[:, 2]))/res['total']/16
+    res['end_error_meal'] = np.sum(np.abs(acovs[gts[:,2]==1, 2]))/res['total_meal']/16
+    res['end_error_snack'] = np.sum(np.abs(acovs[gts[:,2]==2, 2]))/res['total_snack']/16
+    
+    res['fragment_error'] = np.sum( (acovs[:, 0]>1) )/res['total']
+    res['fragment_error_meal'] = np.sum( (acovs[:, 0]>1) & (gts[:,2]==1) )/res['total_meal']
+    res['fragment_error_snack'] = np.sum( (acovs[:, 0]>1) & (gts[:,2]==2) )/res['total_snack']
+    
+    return res
 
