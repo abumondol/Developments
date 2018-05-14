@@ -258,26 +258,26 @@ def train_test_model(train_indices, val_indices, params, model_path_dest=None, m
     logits_bite = mdenseu.fc_layer(drop_out, 1, name="logits_bite")    
     print("logit bite shape in out: ", drop_out.get_shape().as_list(), logits_bite.get_shape().as_list() )
     
-    for i in range(6, 11):
-        mlp = mdenseu.fc_layer(drop_out, 64, name="mlp_"+str(i), activation='relu')
-        drop_out = tf.nn.dropout(mlp, keep_prob=keep_prob, name="dropout_"+str(i))
+    #for i in range(6, 11):
+    #    mlp = mdenseu.fc_layer(drop_out, 64, name="mlp_"+str(i), activation='relu')
+    #    drop_out = tf.nn.dropout(mlp, keep_prob=keep_prob, name="dropout_"+str(i))
     
-    logits_free = mdenseu.fc_layer(drop_out, 1, name="logits_free")    
-    print("logit free shape in, out: ", drop_out.get_shape().as_list(), logits_free.get_shape().as_list() )
+    #logits_free = mdenseu.fc_layer(drop_out, 1, name="logits_free")    
+    #print("logit free shape in, out: ", drop_out.get_shape().as_list(), logits_free.get_shape().as_list() )
         
     prediction_bite = tf.nn.sigmoid(logits_bite, name="prediction_bite")
     correct_prediction_bite = tf.equal(tf.greater(prediction_bite, 0.5), tf.equal(y,1), name="correct_prediction_bite")
     accuracy_bite = tf.reduce_mean(tf.cast(correct_prediction_bite, tf.float32), name="accuracy_bite")
     
-    prediction_free = tf.nn.sigmoid(logits_free, name="prediction_free")
-    correct_prediction_free = tf.equal(tf.greater(prediction_free, 0.5), tf.equal(y,1), name="correct_prediction_free")
-    accuracy_free = tf.reduce_mean(tf.cast(correct_prediction_free, tf.float32), name="accuracy_free")
+    #prediction_free = tf.nn.sigmoid(logits_free, name="prediction_free")
+    #correct_prediction_free = tf.equal(tf.greater(prediction_free, 0.5), tf.equal(y,1), name="correct_prediction_free")
+    #accuracy_free = tf.reduce_mean(tf.cast(correct_prediction_free, tf.float32), name="accuracy_free")
         
     loss_op_bite = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_bite, labels=y), name="loss_op_bite")        
-    loss_op_free = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_free, labels=y), name="loss_op_free")        
+    #loss_op_free = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_free, labels=y), name="loss_op_free")        
     
     train_step_bite = tf.train.AdamOptimizer(learning_rate).minimize(loss_op_bite, name="train_step_bite")
-    train_step_free = tf.train.AdamOptimizer(learning_rate).minimize(loss_op_free, name="train_step_free")
+    #train_step_free = tf.train.AdamOptimizer(learning_rate).minimize(loss_op_free, name="train_step_free")
 
     sess = tf.Session()
     
@@ -293,7 +293,7 @@ def train_test_model(train_indices, val_indices, params, model_path_dest=None, m
             saver = tf.train.Saver()
             saver.restore(sess, model_path_src+'/model')
             print(" ********* Model Loaded for retrain!")
-            train_step, loss_op, accuracy, prediction = train_step_free, loss_op_free, accuracy_free, prediction_free
+            #train_step, loss_op, accuracy, prediction = train_step_free, loss_op_free, accuracy_free, prediction_free
             
         train_indices, _ = mclfu.adjust_for_batch_size(train_indices, train_indices, batch_size)
 
