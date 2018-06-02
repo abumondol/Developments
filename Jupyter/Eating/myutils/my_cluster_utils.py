@@ -10,51 +10,7 @@ import numpy as np
 # In[ ]:
 
 
-def cluster_bites_by_minute(indices, maxDistance=16*60):    
-    count = len(indices)
-    if count<=1:
-        return indices
-    
-    clusters = []
-    j = 0
-    for i in range(1, count):
-        if  indices[i, 0] - indices[i-1, 1]>maxDistance:
-            si = indices[j,0]
-            ei = indices[i-1,1]            
-            clusters.append([si, ei, i-j])
-            j = i
-    
-    si = indices[j,0]
-    ei = indices[count-1,1]    
-    clusters.append([si, ei, count-j])
-    clusters = np.array(clusters).astype(int)    
-    return clusters
 
-
-# In[3]:
-
-
-def merge_clusters(indices, mergeDistance):    
-    count = len(indices)
-    if count<=1:
-        return indices
-    
-    clusters = []
-    j = 0
-    for i in range(1, count):
-        if  indices[i, 0] - indices[i-1, 1]>mergeDistance:
-            si = indices[j,0]
-            ei = indices[i-1,1]
-            bite_count = np.sum(indices[j:i, -1])
-            clusters.append([si, ei, bite_count])
-            j = i
-    
-    si = indices[j,0]
-    ei = indices[count-1,1]
-    bite_count = np.sum(indices[j:count, -1])
-    clusters.append([si, ei, bite_count])
-    clusters = np.array(clusters).astype(int)    
-    return clusters
 
 
 # def cluster_gestures_by_minute(bite_indices, meal_indices, maxDistance=16*60):        

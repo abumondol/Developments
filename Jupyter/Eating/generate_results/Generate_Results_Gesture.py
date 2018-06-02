@@ -43,7 +43,7 @@ pct_proba_steven = gresu.get_percentile_proba_all(all_proba_steven, fs)
 # In[5]:
 
 
-all_proba_our = gresu.get_all_proba(annots, 'our_test_proba_bite_6s', 'bite_free', sess_avail=True)
+all_proba_our = gresu.get_all_proba(annots, 'our_test_proba_bite', 'bite_free', sess_avail=True)
 pct_proba_our = gresu.get_percentile_proba_all(all_proba_our, fs)
 
 
@@ -88,7 +88,7 @@ def get_tpfp(a, indices):
     return tp, fp    
 
 
-# In[7]:
+# In[9]:
 
 
 #for percentile proba th
@@ -125,7 +125,7 @@ def get_tpfp_all_percentile(all_proba, percentile, offline=True, steven=False):
     return tp_count, fp_count
 
 
-# In[8]:
+# In[10]:
 
 
 #for fixed proba th
@@ -158,6 +158,16 @@ def get_tpfp_all_fixed(all_proba, proba_th, steven=False):
 # In[ ]:
 
 
+N=100
+F=6
+H=12
+res = N*F/(2*H*3600-2*F)
+print(res)
+
+
+# In[ ]:
+
+
 res = []
 for proba_th in range(1, 100):    
     tp1, fp1 = get_tpfp_all_fixed(all_proba_our, proba_th/100)
@@ -165,7 +175,7 @@ for proba_th in range(1, 100):
     print(proba_th, "TP, FP Our: {}, {},  Steven: {}, {}".format(tp1, fp1, tp2, fp2))
 
 
-# In[12]:
+# In[11]:
 
 
 res = []
@@ -183,7 +193,7 @@ for p in range(9980, 10000, 2):
     
 
 
-# In[14]:
+# In[ ]:
 
 
 res = np.array(res)

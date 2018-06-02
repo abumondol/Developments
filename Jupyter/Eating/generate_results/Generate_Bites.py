@@ -41,7 +41,7 @@ pct_proba_steven = gresu.get_percentile_proba_all(all_proba_steven, fs)
 # In[5]:
 
 
-all_proba_our = gresu.get_all_proba(annots, 'our_test_proba_bite_6s', 'bite_free', sess_avail=True)
+all_proba_our = gresu.get_all_proba(annots, 'our_test_proba_bite', 'bite_free', sess_avail=True)
 pct_proba_our = gresu.get_percentile_proba_all(all_proba_our, fs)
 
 
@@ -64,8 +64,12 @@ def get_bites(subj, sess, percentile, isSteven):
     assert np.sum(cond)==1    
     proba_th_offline, proba_th_online = pct_proba[cond, -2], pct_proba[cond, -1]    
     
-    bites_offline = gresu.detect_gestures(proba, indices=indices, proba_th=proba_th_offline)
-    bites_online = gresu.detect_gestures(proba, indices=indices, proba_th=proba_th_online)
+    if isSteven:
+        bites_offline = gresu.detect_gestures(proba, indices=indices, proba_th=proba_th_offline)
+        bites_online = gresu.detect_gestures(proba, indices=indices, proba_th=proba_th_online)
+    else:
+        bites_offline = gresu.detect_gestures_fixed_th(proba, indices=indices, proba_th=proba_th_offline)
+        bites_online = gresu.detect_gestures_fixed_th(proba, indices=indices, proba_th=proba_th_online)
     
     return bites_offline, bites_online
 
@@ -86,11 +90,11 @@ def get_bites_for_percentile(percentile, isSteven):
 
 
 res ={}
-isSteven = True 
+isSteven = False
 for p in range(9980, 10000):
     percentile = p/100    
     print(percentile, isSteven)
     res[percentile] = get_bites_for_percentile(percentile, isSteven)
     
-mfileu.write_file('final_results', 'all_bites_steven.pkl', res)
+mfileu.write_file('final_results', 'all_bites_our.pkl', res)
 

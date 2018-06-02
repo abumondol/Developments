@@ -54,3 +54,14 @@ def get_scores_1d(pred, gt):
     
     return tn, tp, fn, fp, acc, pr, rc, f1
 
+
+# In[ ]:
+
+
+def pr_rc_f1(tp, fp, fn):
+    pr = tp/(tp+fp) if tp+fp>0 else 0
+    rc = tp/(tp+fn) if tp+fn>0 else 0
+    f1 = 2*pr*rc/(pr+rc) if pr+rc>0 else 0
+    
+    return pr, rc, f1
+

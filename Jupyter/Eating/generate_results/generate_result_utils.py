@@ -65,7 +65,7 @@ def detect_gestures(proba, indices, proba_th):
 # In[6]:
 
 
-def detect_gestures_fixed_th(proba, indices, proba_th=0.5):
+def detect_gestures_fixed_th(proba, indices, proba_th):
     count = len(proba)    
     #print("Count total, Threshold, count greater proba_th: ", count, proba_th, np.sum(proba>proba_th))    
     
