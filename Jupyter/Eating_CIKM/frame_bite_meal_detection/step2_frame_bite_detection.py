@@ -22,150 +22,134 @@ import my_file_utils as mfileu
 # In[3]:
 
 
-all_proba = mfileu.read_file('generated_for_result', 'all_proba.pkl')
-all_pct_proba = mfileu.read_file('generated_for_result', 'all_pct_proba.pkl')
+def detect_bites_our(ix_proba, proba_th):
+    min_interval = 2*16
+    ix, proba = ix_proba[:, 0], ix_proba[:, 1]
+    count = len(ix)
+    
+    peaks = []    
+    for i in range(1, count-1):
+        if proba[i-1]<proba[i]<=proba[i+1] and proba[i]>=proba_th:        
+            peaks.append([ix[i], proba[i]])
+            
+    peaks = np.array(peaks)    
+    if len(peaks)==0:
+        return []
+    
+    cond = (peaks[:,1]>=proba_th)
+    peaks = peaks[cond, :]
+    ix, proba = peaks[:, 0].astype(int), peaks[:, 1]
+            
+    while True:
+        count = len(ix)
+        if count<=1:
+            break
+            
+        flags = np.ones((count, ), dtype=np.int32)        
+        if (ix[1] - ix[0]<min_interval) and (proba[0]<proba[1]):
+            flags[0] = 0
+        
+        for i in range(1, count-1):
+            cond1 = (ix[i] - ix[i-1]<min_interval) and (proba[i]<=proba[i-1])
+            cond2 = (ix[i+1] - ix[i]<min_interval) and (proba[i]<proba[i+1])            
+            if cond1 or cond2:
+                flags[i] = 0
+    
+        if (ix[count-1] - ix[count-2]<min_interval) and (proba[count-1]<=proba[count-2]):
+            flags[count-1] = 0
+    
+        if np.sum(flags) == len(flags):
+            break
+            
+        cond = (flags==1)
+        ix, proba = ix[cond], proba[cond]
+        
+    return ix.astype(int)
 
 
 # In[4]:
 
 
-def detect_bites(ix_proba, proba_th):
-    min_interval = 2*16
+def detect_bites_steven(ix_proba, proba_th):
+    ix, proba = ix_proba[:, 0], ix_proba[:, 1]
+    count = len(ix_proba)    
     
-    count = len(ix_proba)
-    ix = ix_proba[:, 0]
-    proba = ix_proba[:, 1]    
-    
-    peaks = []    
-    for i in range(1, count-1):
-        if proba[i-1]<proba[i]<=proba[i+1] and proba[i]>=proba_th:        
-            peaks.append(i)
-    #print(len(peaks))
-    
-    if len(peaks)==0:
-        return []
-    elif len(peaks)==1:
-        return np.array([ix[peaks[0]]])
-    
-    while True:
-        count = len(peaks)
-        if count<=1:
-            break
+    res = []
+    inside = False
+    for i in range(count):
+        if proba[i] >= proba_th and inside==False:
+            inside = True
+            si = i
+        elif proba[i]<proba_th/2 and inside==True:            
+            ei = i-1
+            bix = (ix[si]+ix[ei])//2
+            res.append(bix)
+            inside = False
         
-        bites = []
-        
-        if proba[peaks[0]]>proba[peaks[1]] or ix[peaks[1]] - ix[peaks[0]]>=min_interval:
-            bites.append(peaks[0])            
-        
-        for i in range(1, count-1):
-            cond1 = (proba[peaks[i]]>proba[peaks[i+1]]) and proba[peaks[i]]>proba[peaks[i-1]]
-            cond2 = (ix[peaks[i+1]] - ix[peaks[i]]>=2*16) and (ix[peaks[i]] - ix[peaks[i-1]]>=min_interval)
-            if cond1 or cond2:
-                bites.append(peaks[i])
-    
-        if proba[peaks[count-1]]>proba[peaks[count-2]] or ix[peaks[count-1]] - ix[peaks[count-2]]>=min_interval:
-            bites.append(peaks[count-1])
-    
-        if len(bites)==len(peaks):
-            break
-            
-        peaks = bites
-    
-    
-    if len(peaks)==0:
-        return []
-    
-    indices = [ix[i] for i in peaks]
-    return np.array(indices).astype(int)
+    res = np.array(res).astype(int)
+    return res    
 
 
 # In[5]:
 
 
-def get_frames_bites(ix_proba, percentile_proba, percentile_proba_val, pct_proba=None, off_on=None, blank_array = []):
-    assert off_on in [None, "offline", "online"]      
-    assert percentile_proba in ["percentile", "proba"]    
-    
-    ba = blank_array
-    frames = copy.deepcopy(blank_array)
-    bites = copy.deepcopy(blank_array)
-    
-    for subj in range(len(ba)):
-        for sess in range(len(ba[subj])):            
-            ix_p = ix_proba[subj][sess][:, :2]
-            ix_p[:, 0] = ix_p[:, 0]+40 #add offset
-            
-            if percentile_proba=='percentile':                
-                cond  = (pct_proba[:, 0]==subj) & (pct_proba[:, 1]==sess) & (pct_proba[:, 2]==percentile_proba_val)
-                assert np.sum(cond)==1                        
-                proba_th = pct_proba[cond, -2] if off_on=="offline" else pct_proba[cond, -1]
-            else:
-                proba_th = percentile_proba_val
+for lab_free in ['lab', 'free']:       
+    for clf in ['rf', 'our']:         
+        print("\nProcessing frames bites: ", lab_free, clf)
+
+        ipvg = mfileu.read_file('ipvg/ipvg_step4', '{}_ipvg_{}.pkl'.format(lab_free, clf))
+        pct_proba = mfileu.read_file('generated_for_result/pct_proba', '{}_pct_proba_{}.pkl'.format(lab_free, clf))
+        
+        #####################################
+        frames_proba, bites_proba = {}, {}
+        for subj in range(len(ipvg)):
+            for sess in range(len(ipvg[subj])):
+                ip = ipvg[subj][sess][:, :2]               
+                for p in range(10, 95, 5):            
+                    proba_th = p/100
+                    print(proba_th, end=" | ")
+                    frames_proba[(subj, sess, proba_th)] = (ip[:, 1]>=proba_th)
+                    if clf=='rf':                    
+                        bites_proba[(subj, sess, proba_th)] = detect_bites_steven(ip, proba_th)
+                    else:
+                        bites_proba[(subj, sess, proba_th)] = detect_bites_our(ip, proba_th)
                         
-            frames[subj][sess] = ix_p[ix_p[:, 1]>=proba_th, 0]            
-            bites[subj][sess] = detect_bites(ix_p, proba_th=proba_th)                            
-            
-    assert len(frames)>=len(bites)        
-    return frames, bites
-
-
-# In[6]:
-
-
-def get_frames_bites_all(lab_free, clf):
-    if lab_free =='lab':
-        ba = mfileu.read_file('data', 'lab_data_steven_blank_array.pkl')
-    else:
-        ba = mfileu.read_file('data', 'free_data_steven_blank_array.pkl')
-    
-    ix_proba = all_proba[lab_free][clf]
-    pct_proba = all_pct_proba[lab_free][clf]
-    
-    frames = {"proba":{}, "percentile_offline":{}, "percentile_online":{} }
-    bites = {"proba":{}, "percentile_offline":{}, "percentile_online":{} }    
+        mfileu.write_file('generated_for_result/frames', '{}_frames_proba_{}.pkl'.format(lab_free, clf), frames_proba)
+        mfileu.write_file('generated_for_result/bites', '{}_bites_proba_{}.pkl'.format(lab_free, clf), bites_proba)
         
-    for p in range(10, 95, 5):            
-        proba = p/100
-        print(proba, end=" | ")
-        f, b = get_frames_bites(ix_proba, "proba", percentile_proba_val=proba, blank_array=ba)             
-        frames["proba"][proba] = f   
-        bites["proba"][proba] = b
+        #################################
+        frames_pct_offline, bites_pct_offline = {}, {}
+        frames_pct_online, bites_pct_online = {}, {}                
+        pp = pct_proba
+        count = len(pp)
+        for i in range(count):
+            subj, sess, pct, proba_th_offline, proba_th_online = int(pp[i, 0]), int(pp[i, 1]), pp[i, 2], pp[i, 3], pp[i, 4]
+            ip = ipvg[subj][sess][:, :2]
+            print(pct, end=" | ")
+            
+            frames_pct_offline[(subj, sess, pct)] = (ip[:, 1]>=proba_th_offline)
+            if clf=='rf':                    
+                bites_pct_offline[(subj, sess, pct)] = detect_bites_steven(ip, proba_th_offline)
+            else:
+                bites_pct_offline[(subj, sess, pct)] = detect_bites_our(ip, proba_th_offline)
+                
+            if lab_free == 'lab':
+                continue
+                
+            frames_pct_online[(subj, sess, pct)] = (ip[:, 1]>=proba_th_online)
+            if clf=='rf':                    
+                bites_pct_online[(subj, sess, pct)] = detect_bites_steven(ip, proba_th_online)
+            else:
+                bites_pct_online[(subj, sess, pct)] = detect_bites_our(ip, proba_th_online)
+                
 
-    for p in range(9800, 10000):
-        percentile = p/100                            
-        print(percentile, end=" | ")
-
-        f, b = get_frames_bites(ix_proba, "percentile", percentile_proba_val=percentile, pct_proba=pct_proba, off_on="offline", blank_array=ba)
-        frames["percentile_offline"][percentile] = f
-        bites["percentile_offline"][percentile] = b
-
+        assert len(bites_pct_offline.keys()) == count
+        
+        mfileu.write_file('generated_for_result/frames', '{}_frames_pct_offline_{}.pkl'.format(lab_free, clf), frames_pct_offline)
+        mfileu.write_file('generated_for_result/bites', '{}_bites_pct_offline_{}.pkl'.format(lab_free, clf), bites_pct_offline)
         if lab_free == 'free':
-            f, b = get_frames_bites(ix_proba, "percentile", percentile_proba_val=percentile, pct_proba=pct_proba, off_on="online", blank_array=ba)
-            frames["percentile_online"][percentile] = f
-            bites["percentile_online"][percentile] = b
-    
-    return frames, bites
-   
-
-
-# In[7]:
-
-
-#res_lab_free = mfileu.read_file('generated_for_result', 'all_frames_bites.pkl')
-all_frames, all_bites = {}, {}
-
-for lab_free in ['lab', 'free']:    
-    frames_clf, bites_clf = {}, {}
-    for clf in ['RF', 'our']:        
-        print("\n\n--------------", lab_free, clf, "--------------")
-        f, b = get_frames_bites_all(lab_free, clf)
-        frames_clf[clf] = f
-        bites_clf[clf] = b
+            mfileu.write_file('generated_for_result/frames', '{}_frames_pct_online_{}.pkl'.format(lab_free, clf), frames_pct_online)
+            mfileu.write_file('generated_for_result/bites', '{}_bites_pct_online_{}.pkl'.format(lab_free, clf), bites_pct_online)
         
-    all_frames[lab_free] = frames_clf
-    all_bites[lab_free] = bites_clf
-            
-mfileu.write_file('generated_for_result', 'all_frames.pkl', all_frames)
-mfileu.write_file('generated_for_result', 'all_bites.pkl', all_bites)
-print("Done!!!")
+        print("\n--------------- Done ----------------")
 

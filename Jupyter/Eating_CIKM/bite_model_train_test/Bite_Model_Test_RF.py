@@ -26,63 +26,44 @@ import my_classification_utils as mcu
 # In[ ]:
 
 
+step = 4
 model, lab_free = sys.argv[1], sys.argv[2]
 print("Model, lab_free: ", model, lab_free)
+assert lab_free in ['lab', 'free']
+model_folder = model+'_step'+str(step)
 
 
 # In[ ]:
 
 
-########## Test Free Data for bite
-if lab_free=='free':
-    fs = mfileu.read_file('features', 'free_features_steven_right.pkl')
-    ssilv = mfileu.read_file('ssilv', 'free_ssilv_steven_right.pkl')
-    ba = mfileu.read_file('data', 'free_data_steven_blank_array.pkl')
-    
+fs = mfileu.read_file('features/features_step'+str(step), '{}_features_steven_right.pkl'.format(lab_free))
+ssilvg = mfileu.read_file('ssilvg/ssilvg_step'+str(step), '{}_ssilvg_steven_right.pkl'.format(lab_free))
+ba = mfileu.read_file('data', '{}_data_steven_blank_array.pkl'.format(lab_free))
 
-    for subj in range(len(ssilv)):
-        for sess in range(len(ssilv[subj])):
-            print("\nTesting free subject, sess: ", subj, sess)
 
+# In[ ]:
+
+
+for subj in range(len(ssilvg)):
+    for sess in range(len(ssilvg[subj])):
+        print("\nTesting {} subject, sess: {}, {}".format(lab_free, subj, sess))
+
+        if lab_free == 'lab':
+            clf = mfileu.read_file('bite_models/'+model_folder, 'lab_'+str(subj)+'.pkl')
+        else:            
             if subj<5:
-                clf = mfileu.read_file('bite_models/'+model, 'lab_'+str(subj+2)+'.pkl')
+                clf = mfileu.read_file('bite_models/'+model_folder, 'lab_'+str(subj+2)+'.pkl')
             else:
-                clf = mfileu.read_file('bite_models/'+model, 'lab_100.pkl')            
+                clf = mfileu.read_file('bite_models/'+model_folder, 'lab_100.pkl')            
 
-            proba = clf.predict_proba(fs[subj][sess][:, 1:])
-            proba = np.array(proba)
-            proba = proba[:, 1]
-            
-            gt = ssilv[subj][sess][:, 3]
-            ssilv[subj][sess][:, 3] = proba                    
-            ba[subj][sess] = ssilv[subj][sess][:, 2:]            
-            print("Proba shape, pos, gtpos:", proba.shape, np.sum(proba>=0.5), np.sum(gt==1))
+        proba = clf.predict_proba(fs[subj][sess][:, 1:])
+        proba = np.array(proba)
+        proba = proba[:, 1]
 
-    mfileu.write_file('all_proba', 'all_proba_bite_free_{}.pkl'.format(model), ba)
+        gt = ssilvg[subj][sess][:, 3]
+        ssilvg[subj][sess][:, 3] = proba                    
+        ba[subj][sess] = ssilvg[subj][sess][:, 2:]            
+        print("Proba shape, pos, gtpos:", proba.shape, np.sum(proba>=0.5), np.sum(gt==1))
 
-
-# In[ ]:
-
-
-########Test Lab data for bite##########################
-if lab_free=='lab':
-    fs = mfileu.read_file('features', 'lab_features_steven_right.pkl')    
-    ssilv = mfileu.read_file('ssilv', 'lab_ssilv_steven_right.pkl')
-    ba = mfileu.read_file('data', 'lab_data_steven_blank_array.pkl')
-
-    for subj in range(len(ssilv)):
-        for sess in range(len(ssilv[subj])):
-            print("\nTesting lab subject, sess: ", subj, sess)
-
-            clf = mfileu.read_file('bite_models/'+model, 'lab_'+str(subj)+'.pkl')
-            proba = clf.predict_proba(fs[subj][sess][:, 1:])
-            proba = np.array(proba)
-            proba = proba[:, 1]
-            
-            gt = np.copy(ssilv[subj][sess][:, 3])
-            ssilv[subj][sess][:, 3] = proba                    
-            ba[subj][sess] = ssilv[subj][sess][:, 2:]
-            print("Proba shape, pos, gtpos:", proba.shape, np.sum(proba>=0.5), np.sum(gt==1)/40)
-
-    mfileu.write_file('all_proba', 'all_proba_bite_lab_{}.pkl'.format(model), ba)        
+mfileu.write_file('ipvg/ipvg_step'+str(step), '{}_ipvg_{}.pkl'.format(lab_free, model), ba)
 

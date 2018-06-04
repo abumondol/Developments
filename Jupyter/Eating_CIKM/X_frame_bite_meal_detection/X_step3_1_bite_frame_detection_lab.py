@@ -109,8 +109,6 @@ def get_bites_frames(bite_frame, percentile_proba, percentile_proba_val, off_on=
     ba = mfileu.read_file('data', 'lab_data_steven_blank_array.pkl')
     tp, fp, tn, fn = 0, 0, 0, 0
     
-    
-    
     for subj in range(len(ba)):
         for sess in range(len(ba[subj])):
             a = annots[subj][sess]            

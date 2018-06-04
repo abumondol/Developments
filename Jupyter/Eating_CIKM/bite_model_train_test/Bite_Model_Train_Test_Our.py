@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import numpy as np
@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 
-# In[2]:
+# In[ ]:
 
 
 util_path = 'C:/ASM/Dropbox/Developments/Jupyter/Eating/myutils' if 'C:' in os.getcwd() else './myutils'
@@ -28,16 +28,16 @@ import my_tensorflow_dense_utils as mdenseu
 #importlib.reload(biteu)
 
 
-# In[3]:
+# In[ ]:
 
 
 axis_count, label_shape_1 = 6, 1 
-win_size, step_size, feature_count = 5*16, 8, 32
+win_size, step, feature_count = 5*16, 4, 32
 var_min, var_max, gx_th = 1, 25, -0.25
-print("Win size:", win_size, ", Step size:", step_size, ", var min:", var_min, ", var max:", var_max, ', gx_th:', gx_th)
+print("Win size:", win_size, ", Step size:", step, ", var min:", var_min, ", var max:", var_max, ', gx_th:', gx_th)
 
 
-# In[4]:
+# In[ ]:
 
 
 def get_window_data(ds, indices, win_size, offset=0):
@@ -55,10 +55,10 @@ def get_window_data(ds, indices, win_size, offset=0):
     return w, features
 
 
-# In[5]:
+# In[ ]:
 
 
-subj, num_epochs, train_test = 0, 1, 'test_lab'
+subj, num_epochs, train_test = 0, 1, 'train'
 if 'C:' not in mfileu.get_path():    
     subj, num_epochs, train_test = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3]
     
@@ -70,7 +70,7 @@ params['batch_size'] = 128
 params['keep_prob_val'] = 0.5
 
 
-# In[6]:
+# In[ ]:
 
 
 def train_test_model(ds, train_indices, test_indices, params, model_path_dest=None, model_path_src=None):
@@ -179,60 +179,70 @@ def train_test_model(ds, train_indices, test_indices, params, model_path_dest=No
         
 
 
-# In[7]:
+# In[ ]:
 
 
 print("=============================  Train/Test: {} =============================".format(train_test))
 print("\n============ Subject, Epochs, Win Size: {}, {}, {} =============".format(subj, num_epochs, win_size))
 
 
-# In[8]:
+# In[ ]:
 
 
 path = mfileu.get_path()
-model_folder_src = path+'/bite_models/our'
-model_folder_dest = path+'/bite_models/our'
-result_folder = 'our_test_proba_bite'
+model_folder_src = path+'/bite_models/our_step'+str(step)
+model_folder_dest = model_folder_src
+result_folder = 'ipvg/ipvg_step'+str(step)
 
 
-# In[9]:
+# In[ ]:
 
 
-def get_all_indices_lab(ssilv, exclude_subj, step=8):    
-    ssil_all = []
-    subj_count = len(ssilv)
-    
+def get_train_ssilvg(ssilvg, exclude_subj):    
+    res = []
+    subj_count = len(ssilvg)    
     for subj in range(subj_count):        
         if subj==exclude_subj:
             continue
-        for sess in range(len(ssilv[subj])):                         
-            ssil = ssilv[subj][sess][::step, :4]
-            ssil_all = ssil if len(ssil_all)==0 else np.concatenate((ssil_all, ssil))
-    
-    ssil_all = ssil_all.astype(int)
-    cond = (ssil_all[:,-1]>=2) | (ssil_all[:,-1]<0 ) 
-    ssil_all[cond, -1] = 0
-    return ssil_all
+        for sess in range(len(ssilvg[subj])):                                     
+            res = ssilvg[subj][sess] if len(res)==0 else np.concatenate((res, ssilvg[subj][sess]))
+            
+    return res
 
 
-# In[10]:
+# In[ ]:
 
 
 if train_test == 'train':
     print("Training.....")
     
     dlab = mfileu.read_file('data', 'lab_data_steven_right_smoothed.pkl')
-    ssilv = mfileu.read_file('ssilv', 'lab_ssilv_steven_right.pkl')
+    ssilvg = mfileu.read_file('ssilvg/ssilvg_step'+str(step), 'lab_ssilvg_steven_right.pkl')
     
-    indices = get_all_indices_lab(ssilv, exclude_subj=subj)
+    ix = get_train_ssilvg(ssilvg, exclude_subj=subj)    
+    print("Indices summary before filter total, neg, pos:", ix.shape, np.sum(ix[:,3]==0), np.sum(ix[:,3]==1))    
     
-    assert np.sum(indices[:, 0]==subj) == 0    
-    assert np.sum(indices[:, -1]>1) == 0
-    assert np.sum(indices[:, -1]<0) == 0
-    print("Indices summary after subject filter total, neg, pos:", len(indices), np.sum(indices[:, -1]==0), np.sum(indices[:, -1]==1))
+    l, v, g  = ix[:, 3], ix[:, 4], ix[:, 5]
+    cond1, cond2, cond3, cond4  = (v>=1), (v<=50), (g<0), (l>=0)
+    cond = cond1 & cond2 & cond3 & cond4    
+    c = len(ix)
+    print("Cond filter v: {}, {}, g:{}, x:{}, Total filtered: {}".format(c-np.sum(cond1), c-np.sum(cond2), c-np.sum(cond3), c-np.sum(cond4), c-np.sum(cond)))
+    
+    cond_pos = (ix[:,3]==1)
+    print("pos_count: ", np.sum(cond_pos))
+    print("Pos counts V: {}, {}, g: {}, x:{}, Remain pos: {}".format(np.sum(cond_pos&cond1), np.sum(cond_pos& cond2), np.sum(cond_pos&cond3), np.sum(cond_pos&cond4), c-np.sum(cond_pos&cond)))
+    
+    ix = ix[cond, :4].astype(int)    
+    cond = (ix[:,-1]>=2) 
+    ix[cond, -1] = 0 #set sip labels to 0
+    print("Indices summary after filter total, neg, pos:", len(ix), np.sum(ix[:, -1]==0), np.sum(ix[:, -1]==1))
+    
+    assert np.sum(ix[:, 0]==subj) == 0    
+    assert np.sum(ix[:, -1]>1) == 0
+    assert np.sum(ix[:, -1]<0) == 0    
         
-    indices = shuffle(indices)    
-    train_indices, val_indices = train_test_split(indices, test_size=0.1, stratify=indices[:, -1])
+    ix = shuffle(ix)    
+    train_indices, val_indices = train_test_split(ix, test_size=0.1, stratify=ix[:, -1])
     
     print("train, val shapes: ", train_indices.shape, val_indices.shape, np.sum(train_indices[:, -1]), np.sum(val_indices[:, -1]))
     
@@ -240,69 +250,45 @@ if train_test == 'train':
     train_test_model(dlab, train_indices, val_indices, params, model_path_dest=model_path_dest)  
 
 
-# In[11]:
+# In[ ]:
 
 
 #train_test = 'test'
-if train_test=='test_free':
-    print("Testing Free.....")
+if train_test=='test_lab' or train_test=='test_free':    
+    lab_free = 'lab' if train_test=='test_lab' else 'free'    
+    print("Testing {} .....".format(lab_free))
     
-    dfree = mfileu.read_file('data', 'free_data_steven_right_smoothed.pkl')
-    ssilv_free = mfileu.read_file('ssilv', 'free_ssilv_steven_right.pkl')
-    ba = mfileu.read_file('data', 'free_data_steven_blank_array.pkl')
+    ds = mfileu.read_file('data', '{}_data_steven_right_smoothed.pkl'.format(lab_free))
+    ssilvg = mfileu.read_file('ssilvg/ssilvg_step'+str(step), '{}_ssilvg_steven_right.pkl'.format(lab_free))
+    ba = mfileu.read_file('data', '{}_data_steven_blank_array.pkl'.format(lab_free))
         
-    for subj in range(11):        
-        for sess in range(len(dfree[subj])):
-            ssil = ssilv_free[subj][sess][:, :4]
-            indices = ssil.astype(int)
-            print("\n\nSubj, sess, indices shape: ", subj, sess, indices.shape)
-            print("Indices summary total, neg, pos:", len(indices), np.sum(indices[:, -1]==0), np.sum(indices[:, -1]==1))
-        
+    for subj in range(len(ds)):        
+        for sess in range(len(ds[subj])):
             
-            src_subj = subj+2 if subj<5 else 100            
+            ix = ssilvg[subj][sess][:, :4].astype(int)            
+            print("\n\nSubj, sess, indices shape: ", subj, sess, ix.shape)
+            print("Indices summary total, neg, pos:", len(ix), np.sum(ix[:, -1]==0), np.sum(ix[:, -1]==1))
+        
+            if lab_free=='lab':
+                src_subj = subj
+            else:
+                src_subj = subj+2 if subj<5 else 100            
+            
             model_path_src = model_folder_src+"/subj_"+str(src_subj)            
-            proba = train_test_model(dfree, [], indices, params, model_path_src=model_path_src)            
+            proba = train_test_model(ds, [], ix, params, model_path_src=model_path_src)            
             print("Prediction shape: ", proba.shape, np.sum(proba), np.sum(proba>=0.5))            
-            assert len(proba)==len(indices)
+            assert len(proba)==len(ix)
             
-            gt = np.copy(ssilv_free[subj][sess][:, 3])
-            ssilv_free[subj][sess][:, 3] = proba.reshape((-1, ))                    
-            ba[subj][sess] = ssilv_free[subj][sess][:, 2:]
+            v, g  = ssilvg[subj][sess][:, 4], ssilvg[subj][sess][:, 5]
+            cond1, cond2, cond3  = (v>=1), (v<=50), (g<0)
+            cond = np.logical_not(cond1 & cond2 & cond3)               
+            proba[cond] = 0            
+            
+            gt = np.copy(ssilvg[subj][sess][:, 3])
+            ssilvg[subj][sess][:, 3] = proba.reshape((-1, ))                    
+            ba[subj][sess] = ssilvg[subj][sess][:, 2:]
             print("Proba shape, pos, gtpos:", proba.shape, np.sum(proba>=0.5), np.sum(gt==1)/40)
             
-    mfileu.write_file('all_proba', 'all_proba_bite_free_our.pkl', ba)         
-    
-
-
-# In[12]:
-
-
-#train_test = 'test'
-if train_test=='test_lab':
-    print("Testing Lab .....")
-    
-    dlab = mfileu.read_file('data', 'lab_data_steven_right_smoothed.pkl')
-    ssilv_lab = mfileu.read_file('ssilv', 'lab_ssilv_steven_right.pkl')
-    ba = mfileu.read_file('data', 'lab_data_steven_blank_array.pkl')
-        
-    for subj in range(len(dlab)):        
-        for sess in range(len(dlab[subj])):
-            ssil = ssilv_lab[subj][sess][:, :4]
-            indices = ssil.astype(int)
-            print("\n\nSubj, sess, indices shape: ", subj, sess, indices.shape)
-            print("Indices summary total, neg, pos:", len(indices), np.sum(indices[:, -1]==0), np.sum(indices[:, -1]==1))
-        
-            src_subj = subj
-            model_path_src = model_folder_src+"/subj_"+str(src_subj)            
-            proba = train_test_model(dlab, [], indices, params, model_path_src=model_path_src)            
-            print("Prediction shape: ", proba.shape, np.sum(proba), np.sum(proba>=0.5))            
-            assert len(proba)==len(indices)
-            
-            gt = np.copy(ssilv_lab[subj][sess][:, 3])
-            ssilv_lab[subj][sess][:, 3] = proba.reshape((-1, ))                    
-            ba[subj][sess] = ssilv_lab[subj][sess][:, 2:]
-            print("Proba shape, pos, gtpos:", proba.shape, np.sum(proba>=0.5), np.sum(gt==1)/40)
-            
-    mfileu.write_file('all_proba', 'all_proba_bite_lab_our.pkl', ba)         
+    mfileu.write_file('ipvg/ipvg_step'+str(step), '{}_ipvg_our.pkl'.format(lab_free), ba)         
     
 
