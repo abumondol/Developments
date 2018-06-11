@@ -107,7 +107,7 @@ for lab_free in ['lab', 'free']:
                 ip = ipvg[subj][sess][:, :2]               
                 for p in range(10, 95, 5):            
                     proba_th = p/100
-                    print(proba_th, end=" | ")
+                    #print(proba_th, end=" | ")
                     frames_proba[(subj, sess, proba_th)] = (ip[:, 1]>=proba_th)
                     if clf=='rf':                    
                         bites_proba[(subj, sess, proba_th)] = detect_bites_steven(ip, proba_th)
@@ -122,10 +122,11 @@ for lab_free in ['lab', 'free']:
         frames_pct_online, bites_pct_online = {}, {}                
         pp = pct_proba
         count = len(pp)
+        print(count)
         for i in range(count):
             subj, sess, pct, proba_th_offline, proba_th_online = int(pp[i, 0]), int(pp[i, 1]), pp[i, 2], pp[i, 3], pp[i, 4]
             ip = ipvg[subj][sess][:, :2]
-            print(pct, end=" | ")
+            #print(pct, end=" | ")
             
             frames_pct_offline[(subj, sess, pct)] = (ip[:, 1]>=proba_th_offline)
             if clf=='rf':                    

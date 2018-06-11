@@ -35,26 +35,58 @@ def maxpool_layer(x, ksize, strides, padding, name):
 # In[ ]:
 
 
-def gravity_conv_net(x, name):
+def accel_conv_net_without_lstm(x, name):
     x_shape =x.get_shape().as_list()
-    print('Inside one_3dsensor_conv_net: ',name,', x_shape', x_shape)
+    print('Inside accel_conv_net: ',name,', x_shape', x_shape)
     
     axis_count = x_shape[-1]
     print("  Axis count: ", axis_count)
     with tf.name_scope(name):
         x = tf.reshape(x, shape=[-1, x.shape[1], x.shape[2], 1], name="reshape")
-        conv_1 = conv_layer(x, size_in=1, size_out=64, ksize=[3,3], strides=[1,1], padding="VALID", name='conv_1')        
-        conv_2 = conv_layer(conv_1, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_2')
-        maxpool_1 = maxpool_layer(conv_2, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_1")
+        conv_1 = conv_layer(x, size_in=1, size_out=64, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_1')
+        maxpool_1 = maxpool_layer(conv_1, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_1")
         print("  Conv_1, maxpool_1 shape: ", conv_1.get_shape().as_list(), maxpool_1.get_shape().as_list())
-
-        conv_3 = conv_layer(maxpool_1, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_3')        
-        conv_4 = conv_layer(conv_3, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_4')
-        maxpool_2 = maxpool_layer(conv_4, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_2")
-        print("  Conv_3, maxpool_2 shape: ", conv_3.get_shape().as_list(), maxpool_2.get_shape().as_list())
         
-        sz = maxpool_2.get_shape().as_list()
-        flattened = tf.reshape(maxpool_2, shape=[-1, sz[1], sz[2]*sz[3]], name="Flattened")
+        conv_2 = conv_layer(maxpool_1, size_in=64, size_out=64, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_2')
+        maxpool_2 = maxpool_layer(conv_2, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        print("  Conv_2, maxpool_2 shape: ", conv_2.get_shape().as_list(), maxpool_2.get_shape().as_list())
+        
+        
+        conv_3 = conv_layer(maxpool_2, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_3')
+        maxpool_3 = maxpool_layer(conv_3, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_3")
+        print("  Conv_3, maxpool_3 shape: ", conv_3.get_shape().as_list(), maxpool_3.get_shape().as_list())
+        
+        sz = maxpool_3.get_shape().as_list()
+        flattened = tf.reshape(maxpool_3, shape=[-1, sz[1]*sz[2]*sz[3]], name="Flattened")
+        return flattened
+
+
+# In[ ]:
+
+
+def accel_conv_net(x, name):
+    x_shape =x.get_shape().as_list()
+    print('Inside accel_conv_net: ',name,', x_shape', x_shape)
+    
+    axis_count = x_shape[-1]
+    print("  Axis count: ", axis_count)
+    with tf.name_scope(name):
+        x = tf.reshape(x, shape=[-1, x.shape[1], x.shape[2], 1], name="reshape")
+        conv_1 = conv_layer(x, size_in=1, size_out=64, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_1')
+        maxpool_1 = maxpool_layer(conv_1, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_1")
+        print("  Conv_1, maxpool_1 shape: ", conv_1.get_shape().as_list(), maxpool_1.get_shape().as_list())
+        
+        conv_2 = conv_layer(maxpool_1, size_in=64, size_out=64, ksize=[3,2], strides=[1,1], padding="VALID", name='conv_2')
+        maxpool_2 = maxpool_layer(conv_2, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        print("  Conv_2, maxpool_2 shape: ", conv_2.get_shape().as_list(), maxpool_2.get_shape().as_list())
+        
+        
+        conv_3 = conv_layer(maxpool_2, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_3')
+        maxpool_3 = maxpool_layer(conv_3, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_3")
+        print("  Conv_3, maxpool_3 shape: ", conv_3.get_shape().as_list(), maxpool_3.get_shape().as_list())
+        
+        sz = maxpool_3.get_shape().as_list()
+        flattened = tf.reshape(maxpool_3, shape=[-1, sz[1], sz[2]*sz[3]], name="Flattened")
         return flattened
 
 
@@ -69,20 +101,20 @@ def one_3dsensor_conv_net(x, name):
     print("  Axis count: ", axis_count)
     with tf.name_scope(name):
         x = tf.reshape(x, shape=[-1, x.shape[1], x.shape[2], 1], name="reshape")
-        conv_1 = conv_layer(x, size_in=1, size_out=64, ksize=[3,3], strides=[1,1], padding="VALID", name='conv_1')        
+        conv_1 = conv_layer(x, size_in=1, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_1')        
         #maxpool_1 = maxpool_layer(conv_1, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_1")
         #print("  Conv_1, maxpool_1 shape: ", conv_1.get_shape().as_list(), maxpool_1.get_shape().as_list())
 
         conv_2 = conv_layer(conv_1, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_2')
-        maxpool_2 = maxpool_layer(conv_2, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        maxpool_2 = maxpool_layer(conv_2, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
         print("  Conv_2, maxpool_2 shape: ", conv_2.get_shape().as_list(), maxpool_2.get_shape().as_list())
         
-        conv_3 = conv_layer(maxpool_2, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_2')
+        conv_3 = conv_layer(maxpool_2, size_in=64, size_out=64, ksize=[3,3], strides=[1,1], padding="VALID", name='conv_2')
         #maxpool_3 = maxpool_layer(conv_3, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_2")
         #print("  Conv_3, maxpool_3 shape: ", conv_3.get_shape().as_list(), maxpool_2.get_shape().as_list())
         
         conv_4 = conv_layer(conv_3, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_2')
-        maxpool_4 = maxpool_layer(conv_3, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        maxpool_4 = maxpool_layer(conv_4, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
         print("  Conv_4, maxpool_4 shape: ", conv_4.get_shape().as_list(), maxpool_4.get_shape().as_list())
         
         return maxpool_4
@@ -104,7 +136,7 @@ def combine_sensors_conv_net(x, name):
         #print("  Conv_1, maxpool_1 shape: ", conv_1.get_shape().as_list(), maxpool_1.get_shape().as_list())
 
         conv_2 = conv_layer(conv_1, size_in=64, size_out=64, ksize=[3,1], strides=[1,1], padding="VALID", name='conv_2')
-        maxpool_2 = maxpool_layer(conv_2, ksize=[3,1], strides=[2,1], padding="VALID", name="maxpool_2")
+        maxpool_2 = maxpool_layer(conv_2, ksize=[2,1], strides=[2,1], padding="VALID", name="maxpool_2")
         print("  Conv_2, maxpool_2 shape: ", conv_2.get_shape().as_list(), maxpool_2.get_shape().as_list())
         
         sz = maxpool_2.get_shape().as_list()

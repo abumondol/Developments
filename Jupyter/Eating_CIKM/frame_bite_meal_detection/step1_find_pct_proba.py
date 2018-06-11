@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[6]:
+# In[1]:
 
 
 import numpy as np
@@ -11,7 +11,7 @@ import sys
 import importlib
 
 
-# In[7]:
+# In[2]:
 
 
 util_path = 'C:/ASM/Dropbox/Developments/Jupyter/Eating/myutils' if 'C:' in os.getcwd() else './myutils'
@@ -20,7 +20,7 @@ import my_file_utils as mfileu
 #importlib.reload(mdu)
 
 
-# In[8]:
+# In[3]:
 
 
 def get_percentile_proba_other_sess(ipvg_subj, exclude_sess, percentile):
@@ -34,14 +34,14 @@ def get_percentile_proba_other_sess(ipvg_subj, exclude_sess, percentile):
     return np.percentile(other_p, percentile)
 
 
-# In[9]:
+# In[4]:
 
 
 def get_percentile_proba_all(ipvg, lab_free):    
     pct_proba=[]
     for subj in range(len(ipvg)):
         for sess in range(len(ipvg[subj])):
-            for p in range(9900, 10000, 5):                
+            for p in range(9900, 10000):                
                 percentile = p/100
                 proba = ipvg[subj][sess][:, 1]
                 p_off = np.percentile(proba , percentile)
@@ -51,7 +51,7 @@ def get_percentile_proba_all(ipvg, lab_free):
     return np.array(pct_proba)
 
 
-# In[10]:
+# In[5]:
 
 
 for lab_free in ['lab', 'free']:       
